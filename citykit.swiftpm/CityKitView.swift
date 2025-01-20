@@ -7,161 +7,324 @@
 
 
 import SwiftUI
+import Charts
 
 struct CityKitView: View {
-    @State private var grid: [[Tile?]] = Array(repeating: Array(repeating: nil, count: rows), count: columns) // 10x8 grid
+    static let rows: Int = 8
+    static let columns: Int = 11
+    static let tileSize: CGFloat = 55
 
+    // 2D Array: grid[row][column]
+    @State private var grid: [[Tile?]] =
+        Array(repeating: Array(repeating: nil, count: Self.columns), count: Self.rows)
+
+    // Tile stacks (inventory)
     @State private var stacks: [TileType: [Tile]] = [
-        .residential: (0..<20).map { _ in Tile(type: .residential) },
-        .commercial: (0..<15).map { _ in Tile(type: .commercial) },
-        .industrial: (0..<15).map { _ in Tile(type: .industrial) },
-        .streets: (0..<30).map { _ in Tile(type: .streets) },
-        .parks: (0..<5).map { _ in Tile(type: .parks) },
-        .renewableEnergy: (0..<5).map { _ in Tile(type: .renewableEnergy) },
-        .nonRenewableEnergy: (0..<5).map { _ in Tile(type: .nonRenewableEnergy) },
-        .water: (0..<5).map { _ in Tile(type: .water) },
-        .landfill: (0..<5).map { _ in Tile(type: .landfill) },
+        .residential:          (0..<20).map { _ in Tile(type: .residential) },
+        .commercial:           (0..<15).map { _ in Tile(type: .commercial) },
+        .industrial:           (0..<15).map { _ in Tile(type: .industrial) },
+        .streets:              (0..<30).map { _ in Tile(type: .streets) },
+        .parks:                (0..<5).map  { _ in Tile(type: .parks) },
+        .renewableEnergy:      (0..<5).map  { _ in Tile(type: .renewableEnergy) },
+        .nonRenewableEnergy:   (0..<5).map  { _ in Tile(type: .nonRenewableEnergy) },
+        .water:                (0..<5).map  { _ in Tile(type: .water) },
+        .landfill:             (0..<5).map  { _ in Tile(type: .landfill) }
     ]
 
-    @State private var showIcons: Bool = true
     @State private var energyProduction = 0
     @State private var energyConsumption = 0
     @State private var connectedTiles = 0
     @State private var totalTilesNeedingConnections = 0
 
-    static let tileSize: CGFloat = 55 // Make dynamic later!
-    static let rows: Int = 11
-    static let columns: Int = 8
+    @State private var selectedTileType: TileType? = nil
+
+    @State private var swiftBucks: Int = 0
+    @State private var currentDay: Int = 0
+
+    @State private var populationHistory: [(day: Int, inhabitants: Int)] = []
+    @State private var energyHistory: [(day: Int, consumption: Int, production: Int)] = []
+    @State private var moneyHistory: [(day: Int, swiftBucks: Int)] = []
+
+    private let residentsPerHouse = 25
+    private let residentTaxPerPerson = 1
+    private let commercialTaxPerTile = 10
+    private let industrialTaxPerTile = 20
+
 
     var body: some View {
-        VStack {
-            HStack {
-                Text("CityKit - Time to build something new")
-                    .font(.system(size: 30, weight: .semibold))
-            }
-            .frame(height: 50)
-            .frame(maxWidth: .infinity)
+        HStack {
+            VStack(alignment: .center, spacing: 20) {
 
-            HStack(alignment: .top, spacing: 20) {
-                VStack(alignment: .leading, spacing: 14) {
-                    // City Grid
-                    VStack(spacing: 1) {
-                        ForEach(0..<CityKitView.columns, id: \.self) { row in
-                            HStack(spacing: 1) {
-                                ForEach(0..<CityKitView.rows, id: \.self) { column in
-                                    GridCellView(
-                                        tile: $grid[row][column],
-                                        tileSize: CityKitView.tileSize,
-                                        onDragTile: { removedTile in
-                                            stacks[removedTile.type]?.append(removedTile)
-                                            recalculateResources()
-                                        },
-                                        getStreetType: {
-                                            determineStreetType(for: row, column: column)
-                                        },showIcons: showIcons
-                                    )
-                                    .onDrop(of: [.utf8PlainText], isTargeted: nil) { providers in
-                                        handleDrop(providers: providers, row: row, column: column)
+                VStack(spacing: 1) {
+                    ForEach(0..<Self.rows, id: \.self) { row in
+                        HStack(spacing: 1) {
+                            ForEach(0..<Self.columns, id: \.self) { column in
+                                GridCellView(
+                                    tile: $grid[row][column],
+                                    tileSize: Self.tileSize,
+                                    onDragTile: { removedTile in
+                                        stacks[removedTile.type]?.append(removedTile)
+                                        recalculateResources()
+                                    },
+                                    onTapCell: {
+                                        if let existingTile = grid[row][column] {
+                                            // Remove tile on tap
+                                            removeTile(existingTile, row: row, column: column)
+                                        } else {
+                                            // Place a new tile if one is selected
+                                            placeSelectedTile(atRow: row, column: column)
+                                        }
+                                    },
+                                    getStreetType: {
+                                        determineStreetType(for: row, column: column)
                                     }
+                                )
+                                .onDrop(of: [.utf8PlainText], isTargeted: nil) { providers in
+                                    handleDrop(providers: providers, row: row, column: column)
                                 }
                             }
                         }
                     }
-                    .padding()
-
-                    // Tile Selector
-                    HStack(alignment: .center, spacing: 10) {
-                        ForEach(TileType.allCases, id: \.self) { type in
-                            VStack {
-                                ZStack(alignment: .topLeading) {
-                                    ForEach(Array((stacks[type] ?? []).enumerated()), id: \.1.id) { index, tile in
-                                        TileView(tile: tile, size: CityKitView.tileSize)
-                                            .customizeOnDrag(minimumPressDuration: 0.1)
-                                            .onDrag {
-                                                NSItemProvider(object: tile.id.uuidString as NSString)
-                                            }
-                                    }
-                                }
-                                .frame(height: CGFloat(CityKitView.tileSize))
-                                Text("\(stacks[type]?.count ?? 0)")
-                                    .foregroundStyle(.secondary)
-                            }
-                            .frame(width: CityKitView.tileSize)
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    Toggle("Show Icons on Tiles", isOn: $showIcons)
-                        .padding()
-                        .font(.headline)
-                }
-
-                // Charts/Regulations Placeholder
-                VStack {
-                    Text("City Metrics")
-                        .font(.title)
-                        .padding()
-
-                    Text("Energy Production: \(energyProduction)")
-                        .font(.headline)
-                    Text("Energy Consumption: \(energyConsumption)")
-                        .font(.headline)
-                    Text("Connected Tiles: \(connectedTiles) / \(totalTilesNeedingConnections)")
-                        .font(.headline)
                 }
                 .padding()
-                .background(Color.white)
-                .cornerRadius(10)
+
+                VStack(alignment: .leading, spacing: 20) {
+                    HStack(spacing: 16) {
+                        ForEach(TileType.allCases, id: \.self) { type in
+                            Button {
+                                lightFeedback()
+                                if selectedTileType == type {
+                                    selectedTileType = nil
+                                }else {
+                                    selectedTileType = type
+                                }
+                            } label: {
+                                VStack(spacing: 6) {
+                                    ZStack {
+                                        Rectangle()
+                                            .foregroundColor(type.color)
+                                            .frame(width: Self.tileSize, height: Self.tileSize)
+                                            .cornerRadius(6)
+                                        Image(systemName: type.iconName)
+                                            .foregroundColor(.white)
+                                            .font(.system(size: Self.tileSize * 0.4))
+                                    }
+                                    Text("\(stacks[type]?.count ?? 0)")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(
+                                            selectedTileType == type ? Color.accentColor : Color.clear,
+                                            lineWidth: 2
+                                        )
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .padding(.horizontal)
             }
+            VStack {
+                HStack {
+                    Text("Day: \(currentDay)")
+                    Button("Next Day") {
+                        nextDay()
+                    }
+                }
+                Text("Production: \(energyProduction)")
+                Text("Consumption: \(energyConsumption)")
+                Text("Connected: \(connectedTiles) / \(totalTilesNeedingConnections)")
+
+                Chart {
+                    ForEach(populationHistory, id: \.day) { dataPoint in
+                        LineMark(
+                            x: .value("Day", dataPoint.day),
+                            y: .value("Inhabitants", dataPoint.inhabitants)
+                        )
+                        .foregroundStyle(.green) // or any color you prefer
+                    }
+                }
+                .frame(height: 200)
+
+                // 2) Energy Chart (two lines: consumption & production)
+                Chart {
+                    ForEach(energyHistory, id: \.day) { dataPoint in
+                        LineMark(
+                            x: .value("Day", dataPoint.day),
+                            y: .value("Consumption", dataPoint.consumption)
+                        )
+                        .foregroundStyle(.red)
+                        .symbol(by: .value("Type", "Consumption"))
+
+                        LineMark(
+                            x: .value("Day", dataPoint.day),
+                            y: .value("Production", dataPoint.production)
+                        )
+                        .foregroundStyle(.blue)
+                        .symbol(by: .value("Type", "Production"))
+                    }
+                }
+                .frame(height: 200)
+
+                Chart {
+                    ForEach(moneyHistory, id: \.day) { dataPoint in
+                        LineMark(
+                            x: .value("Day", dataPoint.day),
+                            y: .value("SwiftBucks", dataPoint.swiftBucks)
+                        )
+                        .foregroundStyle(.purple)
+                    }
+                }
+                .frame(height: 200)
+            }
+            Spacer()
         }
         .padding(30)
         .background(Color.gray.opacity(0.2))
+        .onAppear {
+            setupInitialCity()
+        }
     }
 
-    private func updateConnections() {
-        var visited = Set<[Int]>()
-        for row in grid.indices {
-            for column in grid[row].indices {
-                if let tile = grid[row][column] {
-                    if tile.type == .streets {
-                        // Streets are always considered connected
-                        grid[row][column]?.connected = true
-                    } else if tile.type.needsStreetConnection {
-                        // Check connectivity for tiles requiring street connections
-                        let _ = floodFill(row: row, column: column, visited: &visited)
+    private func nextDay() {
+        currentDay += 1
+
+        recalculateResources()
+
+        var connectedResidentialTiles = 0
+        var connectedCommercialTiles = 0
+        var connectedIndustrialTiles = 0
+
+        for row in 0..<Self.rows {
+            for col in 0..<Self.columns {
+                if let tile = grid[row][col], tile.connected {
+                    switch tile.type {
+                    case .residential:
+                        connectedResidentialTiles += 1
+                    case .commercial:
+                        connectedCommercialTiles += 1
+                    case .industrial:
+                        connectedIndustrialTiles += 1
+                    default:
+                        break
                     }
+                }
+            }
+        }
+
+        let totalResidents = connectedResidentialTiles * residentsPerHouse
+        let residentialTax = totalResidents * residentTaxPerPerson
+
+        let commercialTax = connectedCommercialTiles * commercialTaxPerTile
+        let industrialTax = connectedIndustrialTiles * industrialTaxPerTile
+
+        let rawDailyTax = residentialTax + commercialTax + industrialTax
+
+        let coverageRatio: Double
+        if energyConsumption > 0, energyProduction < energyConsumption {
+            coverageRatio = Double(energyProduction) / Double(energyConsumption)
+        } else {
+            coverageRatio = 1.0
+        }
+
+        let finalDailyTax = Int(Double(rawDailyTax) * coverageRatio)
+
+        swiftBucks += finalDailyTax
+
+        populationHistory.append((day: currentDay, inhabitants: totalResidents))
+        energyHistory.append((day: currentDay,
+                             consumption: energyConsumption,
+                             production: energyProduction))
+        moneyHistory.append((day: currentDay, swiftBucks: swiftBucks))
+    }
+
+    // MARK: - Removing a Tile
+    private func removeTile(_ tile: Tile, row: Int, column: Int) {
+        // Clear the cell
+        grid[row][column] = nil
+        // Put the removed tile back into the stack
+        stacks[tile.type]?.append(tile)
+        recalculateResources()
+    }
+
+    // MARK: - Placing a Tile by Tapping
+    private func placeSelectedTile(atRow row: Int, column: Int) {
+        // 1. Must have a selected tile type
+        guard let type = selectedTileType else { return }
+        // 2. Must have tile(s) left in the stack
+        guard let count = stacks[type]?.count, count > 0 else { return }
+        // 3. If cell is empty, place from the stack
+        guard grid[row][column] == nil else { return }
+
+        // Remove one tile from the stack & put it on the board
+        if let newTile = stacks[type]?.removeFirst() {
+            grid[row][column] = newTile
+            recalculateResources()
+        }
+    }
+
+    // MARK: - Connectivity (Simplified)
+    private func updateConnections() {
+        for row in 0..<Self.rows {
+            for column in 0..<Self.columns {
+                guard let tile = grid[row][column] else { continue }
+
+                // If tile needs street connection, check adjacency
+                if tile.type.needsStreetConnection {
+                    let neighbors = [
+                        (row - 1, column),
+                        (row + 1, column),
+                        (row, column - 1),
+                        (row, column + 1)
+                    ]
+
+                    var hasStreetNeighbor = false
+                    for (nr, nc) in neighbors {
+                        if nr >= 0, nr < Self.rows, nc >= 0, nc < Self.columns {
+                            if let neighborTile = grid[nr][nc], neighborTile.type == .streets {
+                                hasStreetNeighbor = true
+                                break
+                            }
+                        }
+                    }
+                    tile.connected = hasStreetNeighbor
+                } else {
+                    // e.g. parks, water, renewable, etc.
+                    tile.connected = false
                 }
             }
         }
     }
 
+    // MARK: - Resource Calculation
     private func recalculateResources() {
-        var totalProduction = 0
-        var totalConsumption = 0
-        var connected = 0
-        var totalWithNeeds = 0
-
-        // Update connections before calculating resources
+        // Update connections first
         updateConnections()
 
-        for row in grid.indices {
-            for column in grid[row].indices {
+        var totalProduction = 0
+        var totalConsumption = 0
+        var connectedCount = 0
+        var totalThatNeedConnection = 0
+
+        for row in 0..<Self.rows {
+            for column in 0..<Self.columns {
                 if let tile = grid[row][column] {
-                    // Count energy production only for connected tiles or renewable energy
-                    if tile.connected || tile.type == .renewableEnergy {
+                    if tile.type == .renewableEnergy || tile.connected {
                         totalProduction += tile.producesEnergy
                     }
 
-                    // Count energy consumption only for connected tiles
                     if tile.connected {
                         totalConsumption += tile.needsEnergy
                     }
 
-                    // Count total tiles needing connections and those connected
+                    // Track "needs street" vs connected
                     if tile.type.needsStreetConnection {
-                        totalWithNeeds += 1
+                        totalThatNeedConnection += 1
                         if tile.connected {
-                            connected += 1
+                            connectedCount += 1
                         }
                     }
                 }
@@ -170,134 +333,93 @@ struct CityKitView: View {
 
         energyProduction = totalProduction
         energyConsumption = totalConsumption
-        connectedTiles = connected
-        totalTilesNeedingConnections = totalWithNeeds
+        connectedTiles = connectedCount
+        totalTilesNeedingConnections = totalThatNeedConnection
     }
 
-    private func floodFill(row: Int, column: Int, visited: inout Set<[Int]>) -> Bool {
-        guard row >= 0, row < grid.count, column >= 0, column < grid[0].count else { return false }
-        guard let tile = grid[row][column], !visited.contains([row, column]) else { return false }
-
-        // Mark this tile as visited
-        visited.insert([row, column])
-
-        // If it's a street, it propagates connection
-        if tile.type == .streets {
-            grid[row][column]?.connected = true
-            return true
-        }
-
-        // If it's a tile needing connection, check neighbors recursively
-        let neighbors = [
-            (row - 1, column), // North
-            (row + 1, column), // South
-            (row, column - 1), // West
-            (row, column + 1)  // East
-        ]
-
-        var isConnected = false
-        for (neighborRow, neighborCol) in neighbors {
-            if floodFill(row: neighborRow, column: neighborCol, visited: &visited) {
-                isConnected = true
-            }
-        }
-
-        // Mark this tile as connected if any neighbor is connected
-        if isConnected {
-            grid[row][column]?.connected = true
-        }
-        print("Tile at (\(row), \(column)) connected: \(grid[row][column]?.connected ?? false)")
-
-        return isConnected
-    }
-
+    // MARK: - Determine Street Asset + Rotation
     private func determineStreetType(for row: Int, column: Int) -> (String, Double)? {
         guard let tile = grid[row][column], tile.type == .streets else { return nil }
 
-        let neighbors = [
-            (-1, 0), // North
-            (1, 0),  // South
-            (0, -1), // West
-            (0, 1)   // East
+        let neighbors: [(offsetName: String, dr: Int, dc: Int)] = [
+            ("N", -1, 0),
+            ("S",  1, 0),
+            ("W",  0, -1),
+            ("E",  0,  1)
         ]
 
         var connections: [String] = []
 
-        for (index, (dr, dc)) in neighbors.enumerated() {
-            let newRow = row + dr
-            let newCol = column + dc
+        for (direction, dr, dc) in neighbors {
+            let nr = row + dr
+            let nc = column + dc
 
-            if newRow >= 0, newRow < grid.count,
-               newCol >= 0, newCol < grid[0].count,
-               grid[newRow][newCol]?.type == .streets {
-                switch index {
-                case 0: connections.append("N") // North
-                case 1: connections.append("S") // South
-                case 2: connections.append("W") // West
-                case 3: connections.append("E") // East
-                default: break
+            if nr >= 0, nr < Self.rows, nc >= 0, nc < Self.columns {
+                if grid[nr][nc]?.type == .streets {
+                    connections.append(direction)
                 }
             }
         }
 
         let connectionSet = Set(connections)
 
-        if connectionSet == ["N"] { return ("street_straight_LR", 90) } // Vertical, connected North
-        if connectionSet == ["S"] { return ("street_straight_LR", 90) } // Vertical, connected South
-        if connectionSet == ["W"] { return ("street_straight_LR", 0) }  // Horizontal, connected West
-        if connectionSet == ["E"] { return ("street_straight_LR", 0) }  // Horizontal, connected East
+        // Single direction – simple end piece
+        if connectionSet == ["N"] { return ("street_straight_LR", 90) }
+        if connectionSet == ["S"] { return ("street_straight_LR", 90) }
+        if connectionSet == ["W"] { return ("street_straight_LR", 0) }
+        if connectionSet == ["E"] { return ("street_straight_LR", 0) }
 
-        // Handle straight roads
-        if connectionSet == ["N", "S"] { return ("street_straight_LR", 90) } // Vertical
-        if connectionSet == ["W", "E"] { return ("street_straight_LR", 0) } // Horizontal
+        // Straight roads
+        if connectionSet == ["N", "S"] { return ("street_straight_LR", 90) }
+        if connectionSet == ["W", "E"] { return ("street_straight_LR", 0) }
 
-        // Handle corners
+        // Corners
         if connectionSet == ["N", "E"] { return ("street_corner_BR", 270) }
         if connectionSet == ["N", "W"] { return ("street_corner_BR", 180) }
         if connectionSet == ["S", "E"] { return ("street_corner_BR", 0) }
         if connectionSet == ["S", "W"] { return ("street_corner_BR", 90) }
 
-        // Handle T-junctions
-        if connectionSet == ["W", "N", "E"] { return ("street_t-junction_LRT", 0) }   // Default: West, North, East
-        if connectionSet == ["N", "S", "E"] { return ("street_t-junction_LRT", 90) }  // North, South, East
-        if connectionSet == ["E", "S", "W"] { return ("street_t-junction_LRT", 180) } // East, South, West
-        if connectionSet == ["W", "S", "N"] { return ("street_t-junction_LRT", 270) } // West, South, North
+        // T-Junctions
+        if connectionSet == ["W", "N", "E"] { return ("street_t-junction_LRT", 0) }
+        if connectionSet == ["N", "S", "E"] { return ("street_t-junction_LRT", 90) }
+        if connectionSet == ["E", "S", "W"] { return ("street_t-junction_LRT", 180) }
+        if connectionSet == ["W", "S", "N"] { return ("street_t-junction_LRT", 270) }
 
-        // Handle crossroad
-        if connectionSet == ["N", "S", "E", "W"] { return ("street_x-crossing", 0) } // Crossroads
+        // Crossroad
+        if connectionSet == ["N", "S", "E", "W"] {
+            return ("street_x-crossing", 0)
+        }
 
-        // Fallback for isolated streets
-        return ("street_straight_LR", 0) // Default to horizontal straight road
+        // Fallback (isolated road)
+        return ("street_straight_LR", 0)
     }
 
-
+    // MARK: - Handle Drops (only for moving tiles cell-to-cell)
     private func handleDrop(providers: [NSItemProvider], row: Int, column: Int) -> Bool {
         guard let provider = providers.first else { return false }
         provider.loadObject(ofClass: NSString.self) { object, _ in
             guard let idString = object as? String, let tileID = UUID(uuidString: idString) else { return }
 
             DispatchQueue.main.async {
-                // Check if a tile already exists at the target location
+                // If there's already a tile in this cell, move it back to the stack
                 if let existingTile = grid[row][column] {
-                    // Return the existing tile to its stack
                     mediumFeedback()
                     stacks[existingTile.type]?.append(existingTile)
                 }
 
-                // Check if the tile is being moved from another grid cell
+                // 1) Try to find the dragged tile in the grid
                 for r in 0..<grid.count {
                     for c in 0..<grid[r].count {
                         if grid[r][c]?.id == tileID {
-                            // Move the tile to the new location
                             grid[row][column] = grid[r][c]
-                            grid[r][c] = nil // Clear the original cell
+                            grid[r][c] = nil
                             recalculateResources()
                             return
                         }
                     }
                 }
 
-                // Handle the tile coming from a stack
+                // 2) If not in the grid, it might be in the stack
                 for (type, tiles) in stacks {
                     if let index = tiles.firstIndex(where: { $0.id == tileID }) {
                         grid[row][column] = stacks[type]?.remove(at: index)
@@ -310,93 +432,114 @@ struct CityKitView: View {
         recalculateResources()
         return true
     }
+
+    private func setupInitialCity() {
+        // 1) Clear the current grid
+        for row in 0..<Self.rows {
+            for col in 0..<Self.columns {
+                grid[row][col] = nil
+            }
+        }
+
+        // 2) Place a vertical road (column 4, rows 0..6)
+        for row in 0...4 {
+            grid[row][4] = Tile(type: .streets)
+        }
+
+        // 3) Place a horizontal road (row 4, columns 2..4)
+        for col in 0...3 {
+            grid[4][col] = Tile(type: .streets)
+        }
+
+        // 4) Place 3 houses (connected to the horizontal road)
+        grid[5][1] = Tile(type: .residential)
+        grid[5][2] = Tile(type: .residential)
+        grid[5][3] = Tile(type: .residential)
+
+        // 5) Place 1 commercial tile
+        grid[5][4] = Tile(type: .commercial)
+
+        // 6) Place 1 industrial tile (somewhere near the corner)
+        grid[1][5] = Tile(type: .industrial)
+
+        // 7) Place 2 renewable energy (solar) tiles
+        grid[6][10] = Tile(type: .renewableEnergy)
+        grid[7][10] = Tile(type: .renewableEnergy)
+
+        // 8) Recalculate after placing tiles
+        recalculateResources()
+
+        populationHistory.append((day: currentDay, inhabitants: 0))
+        energyHistory.append((day: currentDay,
+                             consumption: 0,
+                             production: 0))
+        moneyHistory.append((day: currentDay, swiftBucks: swiftBucks))
+
+        nextDay()
+    }
 }
 
 struct GridCellView: View {
     @Binding var tile: Tile?
     let tileSize: CGFloat
+
+    // Called when user drags a tile out of this cell
     let onDragTile: (Tile) -> Void
-    let getStreetType: () -> (String, Double)? // Returns the asset name and rotation angle
-    let showIcons: Bool
+
+    // Called when user taps on the cell (remove tile or place new tile)
+    let onTapCell: () -> Void
+
+    // Returns (assetName, rotationAngle) for street tiles
+    let getStreetType: () -> (String, Double)?
 
     var body: some View {
-        ZStack (alignment: .topTrailing){
-
-            // Base cell
+        ZStack(alignment: .topTrailing) {
+            // Base / ground
             Image("forest_1")
                 .resizable()
                 .scaledToFit()
                 .frame(width: tileSize, height: tileSize)
 
-            // If the tile is a street
-            if let currentTile = tile, currentTile.type == .streets {
-                if let (streetAsset, rotationAngle) = getStreetType() {
-                    // Display street asset with dynamic rotation
-                    Image(streetAsset)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: tileSize, height: tileSize)
-                        .rotationEffect(.degrees(rotationAngle))
-                        .onDrag {
-                            NSItemProvider(object: currentTile.id.uuidString as NSString)
-                        }
+            if let currentTile = tile {
+                // If it’s a street tile, pick the correct texture
+                if currentTile.type == .streets {
+                    if let (streetAsset, rotationAngle) = getStreetType() {
+                        Image(streetAsset)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: tileSize, height: tileSize)
+                            .rotationEffect(.degrees(rotationAngle))
+                            .onDrag {
+                                NSItemProvider(object: currentTile.id.uuidString as NSString)
+                            }
+                    } else {
+                        // Fallback
+                        Image("street_straight_LR")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: tileSize, height: tileSize)
+                            .onDrag {
+                                NSItemProvider(object: currentTile.id.uuidString as NSString)
+                            }
+                    }
                 } else {
-                    // Fallback for streets with no neighbors
-                    Image("street_straight_LR")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: tileSize, height: tileSize)
-                        .onDrag {
-                            NSItemProvider(object: currentTile.id.uuidString as NSString)
-                        }
-                }
-            } else if let currentTile = tile {
-                // Non-street tiles
-
-                if currentTile.type == .renewableEnergy {
-                    Image("energy_solar")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: tileSize, height: tileSize)
-                        .onDrag {
-                            NSItemProvider(object: currentTile.id.uuidString as NSString)
-                        }
-
-                }else if currentTile.type == .commercial {
-                    Image("commercial_1")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: tileSize, height: tileSize)
-                        .onDrag {
-                            NSItemProvider(object: currentTile.id.uuidString as NSString)
-                        }
-                }else {
+                    // Non-street tile
                     TileView(tile: currentTile, size: tileSize)
                         .onDrag {
                             NSItemProvider(object: currentTile.id.uuidString as NSString)
                         }
                 }
-            }
 
-            if let currentTile = tile, currentTile.type != .streets {
-                Rectangle()
-                    .stroke(currentTile.type.color, lineWidth: 2) // Border in tile's color
-                    .frame(width: tileSize, height: tileSize)
-
-                if showIcons {
-                    Image(systemName: currentTile.type.iconName)
-                        .foregroundColor(.white)
-                        .font(.system(size: tileSize * 0.2))
+                // Outline for non-street tiles (optional)
+                if currentTile.type != .streets {
+                    Rectangle()
+                        .stroke(currentTile.type.color, lineWidth: 2)
+                        .frame(width: tileSize, height: tileSize)
                 }
             }
         }
         .onTapGesture {
-            // Handle tap to remove the tile
-            if let removedTile = tile {
-                mediumFeedback()
-                tile = nil
-                onDragTile(removedTile) // Return the tile to its stack
-            }
+            onTapCell()
         }
     }
 }
@@ -407,50 +550,31 @@ struct TileView: View {
 
     var body: some View {
         ZStack {
-            // Background color for the tile
             Rectangle()
                 .foregroundColor(tile.type.color)
                 .frame(width: size, height: size)
 
-            // Icon for the tile
             if tile.type == .streets {
                 Image("street_straight_LR")
                     .resizable()
                     .scaledToFit()
                     .frame(width: size, height: size)
-            } else if tile.type == .renewableEnergy {
-                Image("energy_solar")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: size, height: size)
-            } else if tile.type == .commercial {
-                Image("commercial_1")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: size, height: size)
-            }else {
+            } else {
                 Image(systemName: tile.type.iconName)
-                    .foregroundColor(.white) // Ensures high contrast and visibility
-                    .font(.system(size: size * 0.5)) // Adjust icon size relative to tile size
+                    .foregroundColor(.white)
+                    .font(.system(size: size * 0.5))
             }
-
-            VStack {
-                Text("\(tile.connected)")
-            }
-            .font(.system(size: 12))
-            .foregroundStyle(.red)
         }
     }
 }
 
-// Models
+// MARK: - Tile Model
 class Tile: Identifiable, ObservableObject {
     let id = UUID()
     let type: TileType
-    @Published var needsEnergy: Int = 0
-    @Published var producesEnergy: Int = 0
-    @Published var connected: Bool = false // Is the tile connected to required infrastructure?
-    @Published var energySupplied: Bool = false // Does the tile receive energy?
+    @Published var needsEnergy: Int
+    @Published var producesEnergy: Int
+    @Published var connected: Bool = false
 
     init(type: TileType) {
         self.type = type
@@ -459,55 +583,63 @@ class Tile: Identifiable, ObservableObject {
     }
 }
 
-
 enum TileType: String, CaseIterable {
-    case residential, commercial, industrial, streets, parks, renewableEnergy, nonRenewableEnergy, water, landfill
+    case residential
+    case commercial
+    case industrial
+    case streets
+    case parks
+    case renewableEnergy
+    case nonRenewableEnergy
+    case water
+    case landfill
 
     var iconName: String {
         switch self {
-        case .residential: return "house.fill"
-        case .commercial: return "bag.fill"
-        case .industrial: return "gearshape.fill"
-        case .streets: return "road.lanes"
-        case .parks: return "leaf.fill"
-        case .renewableEnergy: return "sun.max.fill"
-        case .nonRenewableEnergy: return "flame.fill"
-        case .water: return "drop.fill"
-        case .landfill: return "trash.fill"
+        case .residential:          return "house.fill"
+        case .commercial:           return "bag.fill"
+        case .industrial:           return "gearshape.fill"
+        case .streets:              return "road.lanes"
+        case .parks:                return "leaf.fill"
+        case .renewableEnergy:      return "sun.max.fill"
+        case .nonRenewableEnergy:   return "flame.fill"
+        case .water:                return "drop.fill"
+        case .landfill:             return "trash.fill"
         }
     }
 
     var color: Color {
         switch self {
-        case .residential: return .green
-        case .commercial: return .blue
-        case .industrial: return .yellow
-        case .streets: return .gray
-        case .parks: return .green
-        case .renewableEnergy: return .cyan
-        case .nonRenewableEnergy: return .black
-        case .water: return .blue
-        case .landfill: return .brown
+        case .residential:          return .green
+        case .commercial:           return .blue
+        case .industrial:           return .yellow
+        case .streets:              return .gray
+        case .parks:                return .green
+        case .renewableEnergy:      return .cyan
+        case .nonRenewableEnergy:   return .black
+        case .water:                return .blue
+        case .landfill:             return .brown
         }
     }
 
     var needsEnergy: Int {
         switch self {
-        case .residential: return 5 // Higher, as it represents multiple houses
-        case .commercial: return 8
-        case .industrial: return 15
-        default: return 0
+        case .residential:          return 5
+        case .commercial:           return 8
+        case .industrial:           return 15
+        default:                    return 0
         }
     }
 
     var producesEnergy: Int {
         switch self {
-        case .renewableEnergy: return 20
-        case .nonRenewableEnergy: return 100
-        default: return 0
+        case .renewableEnergy:      return 20
+        case .nonRenewableEnergy:   return 100
+        default:                    return 0
         }
     }
 
+    // Which tile types need road adjacency to “activate”
     var needsStreetConnection: Bool {
         switch self {
         case .residential, .commercial, .industrial, .nonRenewableEnergy, .landfill:
@@ -517,6 +649,7 @@ enum TileType: String, CaseIterable {
         }
     }
 }
+
 
 extension View {
     public func customizeOnDrag(minimumPressDuration: TimeInterval) -> some View {
