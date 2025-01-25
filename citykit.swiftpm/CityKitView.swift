@@ -11,8 +11,8 @@ import Charts
 
 struct CityKitView: View {
     static let rows: Int = 8
-    static let columns: Int = 11
-    static let tileSize: CGFloat = 55
+    static let columns: Int = 10
+    static let tileSize: CGFloat = 45
 
     // 2D Array: grid[row][column]
     @State private var grid: [[Tile?]] =
@@ -26,10 +26,15 @@ struct CityKitView: View {
         .streets:              (0..<30).map { _ in Tile(type: .streets) },
         .parks:                (0..<5).map  { _ in Tile(type: .parks) },
         .renewableEnergy:      (0..<5).map  { _ in Tile(type: .renewableEnergy) },
-        .nonRenewableEnergy:   (0..<5).map  { _ in Tile(type: .nonRenewableEnergy) },
-        .water:                (0..<5).map  { _ in Tile(type: .water) },
-        .landfill:             (0..<5).map  { _ in Tile(type: .landfill) }
+        .nonRenewableEnergy:   (0..<5).map  { _ in Tile(type: .nonRenewableEnergy) }
+       // .water:                (0..<5).map  { _ in Tile(type: .water) }
+      //  .landfill:             (0..<5).map  { _ in Tile(type: .landfill) }
     ]
+
+    @State private var backgroundIDs: [[Int]] =
+        (0..<Self.rows).map { _ in
+            (0..<Self.columns).map { _ in Int.random(in: 1...4) }
+        }
 
     @State private var energyProduction = 0
     @State private var energyConsumption = 0
@@ -52,7 +57,64 @@ struct CityKitView: View {
 
 
     var body: some View {
-        HStack {
+        HStack (alignment: .top){
+            ScrollView {
+                VStack (alignment: .leading, spacing: 12){
+                    Text("Statistics")
+                        .font(.system(size: 28, weight: .semibold))
+
+                    HStack {
+                        Text("Day: \(currentDay)")
+                        Button("Next Day") {
+                            nextDay()
+                        }
+                    }
+
+                    Chart {
+                        ForEach(populationHistory, id: \.day) { dataPoint in
+                            LineMark(
+                                x: .value("Day", dataPoint.day),
+                                y: .value("Inhabitants", dataPoint.inhabitants)
+                            )
+                            .foregroundStyle(.green) // or any color you prefer
+                        }
+                    }
+                    .frame(width: 275, height: 125)
+                    .padding()
+                    .background(.regularMaterial)
+                    .cornerRadius(12)
+
+                    // 2) Energy Chart (two lines: consumption & production)
+                    Chart {
+                        ForEach(energyHistory, id: \.day) { dataPoint in
+                            LineMark(
+                                x: .value("Day", dataPoint.day),
+                                y: .value("Consumption", dataPoint.consumption)
+                            )
+                            .foregroundStyle(.red)
+                            .symbol(by: .value("Type", "Consumption"))
+
+                            LineMark(
+                                x: .value("Day", dataPoint.day),
+                                y: .value("Production", dataPoint.production)
+                            )
+                            .foregroundStyle(.blue)
+                            .symbol(by: .value("Type", "Production"))
+                        }
+                    }
+                    .frame(width: 275, height: 125)
+                    .padding()
+                    .background(.regularMaterial)
+                    .cornerRadius(12)
+
+                    Text("Production: \(energyProduction)")
+                    Text("Consumption: \(energyConsumption)")
+                    Text("Connected: \(connectedTiles) / \(totalTilesNeedingConnections)")
+
+                    Spacer()
+                }
+            }
+
             VStack(alignment: .center, spacing: 20) {
 
                 VStack(spacing: 1) {
@@ -62,6 +124,7 @@ struct CityKitView: View {
                                 GridCellView(
                                     tile: $grid[row][column],
                                     tileSize: Self.tileSize,
+                                    randomNum: backgroundIDs[row][column],
                                     onDragTile: { removedTile in
                                         stacks[removedTile.type]?.append(removedTile)
                                         recalculateResources()
@@ -99,7 +162,8 @@ struct CityKitView: View {
                                     selectedTileType = type
                                 }
                             } label: {
-                                VStack(spacing: 6) {
+                                TileViewForType(tileType: type, size: CityKitView.tileSize)
+                                /*VStack(spacing: 6) {
                                     ZStack {
                                         Rectangle()
                                             .foregroundColor(type.color)
@@ -119,7 +183,7 @@ struct CityKitView: View {
                                             selectedTileType == type ? Color.accentColor : Color.clear,
                                             lineWidth: 2
                                         )
-                                )
+                                )*/
                             }
                             .buttonStyle(.plain)
                         }
@@ -127,60 +191,26 @@ struct CityKitView: View {
                 }
                 .padding(.horizontal)
             }
-            VStack {
-                HStack {
-                    Text("Day: \(currentDay)")
-                    Button("Next Day") {
-                        nextDay()
-                    }
-                }
-                Text("Production: \(energyProduction)")
-                Text("Consumption: \(energyConsumption)")
-                Text("Connected: \(connectedTiles) / \(totalTilesNeedingConnections)")
+            ScrollView {
+                VStack (alignment: .leading, spacing: 12){
+                    Text("Regulations")
+                        .font(.system(size: 28, weight: .semibold))
 
-                Chart {
-                    ForEach(populationHistory, id: \.day) { dataPoint in
-                        LineMark(
-                            x: .value("Day", dataPoint.day),
-                            y: .value("Inhabitants", dataPoint.inhabitants)
-                        )
-                        .foregroundStyle(.green) // or any color you prefer
+                    VStack (alignment: .leading){
+                        Text("Free public transit")
+                            .font(.headline)
+                        Text("Allow every citizen to use public transport for free. Will decrease traffic congestion and reduce air pollution.")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
                     }
-                }
-                .frame(height: 200)
+                    .frame(width: 250)
+                    .padding()
+                    .background(.regularMaterial)
+                    .cornerRadius(12)
 
-                // 2) Energy Chart (two lines: consumption & production)
-                Chart {
-                    ForEach(energyHistory, id: \.day) { dataPoint in
-                        LineMark(
-                            x: .value("Day", dataPoint.day),
-                            y: .value("Consumption", dataPoint.consumption)
-                        )
-                        .foregroundStyle(.red)
-                        .symbol(by: .value("Type", "Consumption"))
-
-                        LineMark(
-                            x: .value("Day", dataPoint.day),
-                            y: .value("Production", dataPoint.production)
-                        )
-                        .foregroundStyle(.blue)
-                        .symbol(by: .value("Type", "Production"))
-                    }
+                    Spacer()
                 }
-                .frame(height: 200)
-
-                Chart {
-                    ForEach(moneyHistory, id: \.day) { dataPoint in
-                        LineMark(
-                            x: .value("Day", dataPoint.day),
-                            y: .value("SwiftBucks", dataPoint.swiftBucks)
-                        )
-                        .foregroundStyle(.purple)
-                    }
-                }
-                .frame(height: 200)
             }
-            Spacer()
         }
         .padding(30)
         .background(Color.gray.opacity(0.2))
@@ -229,10 +259,6 @@ struct CityKitView: View {
         } else {
             coverageRatio = 1.0
         }
-
-        let finalDailyTax = Int(Double(rawDailyTax) * coverageRatio)
-
-        swiftBucks += finalDailyTax
 
         populationHistory.append((day: currentDay, inhabitants: totalResidents))
         energyHistory.append((day: currentDay,
@@ -463,8 +489,8 @@ struct CityKitView: View {
         grid[1][5] = Tile(type: .industrial)
 
         // 7) Place 2 renewable energy (solar) tiles
-        grid[6][10] = Tile(type: .renewableEnergy)
-        grid[7][10] = Tile(type: .renewableEnergy)
+        grid[6][CityKitView.columns - 1] = Tile(type: .renewableEnergy)
+        grid[7][CityKitView.columns - 1] = Tile(type: .renewableEnergy)
 
         // 8) Recalculate after placing tiles
         recalculateResources()
@@ -482,6 +508,7 @@ struct CityKitView: View {
 struct GridCellView: View {
     @Binding var tile: Tile?
     let tileSize: CGFloat
+    let randomNum: Int
 
     // Called when user drags a tile out of this cell
     let onDragTile: (Tile) -> Void
@@ -495,7 +522,7 @@ struct GridCellView: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             // Base / ground
-            Image("forest_1")
+            Image("Back_\(randomNum)")
                 .resizable()
                 .scaledToFit()
                 .frame(width: tileSize, height: tileSize)
@@ -530,12 +557,6 @@ struct GridCellView: View {
                         }
                 }
 
-                // Outline for non-street tiles (optional)
-                if currentTile.type != .streets {
-                    Rectangle()
-                        .stroke(currentTile.type.color, lineWidth: 2)
-                        .frame(width: tileSize, height: tileSize)
-                }
             }
         }
         .onTapGesture {
@@ -559,8 +580,93 @@ struct TileView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: size, height: size)
-            } else {
+            } else if tile.type == .residential {
+                Image("Hou_\(tile.randomVariant)")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+            } else if tile.type == .commercial {
+                Image("Com_\(tile.randomVariant)")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+            } else if tile.type == .industrial {
+                Image("Ind_\(tile.randomVariant)")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+            } else if tile.type == .renewableEnergy {
+                Image("Ren_1")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+            } else if tile.type == .nonRenewableEnergy {
+                Image("Con_1")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+            }else {
                 Image(systemName: tile.type.iconName)
+                    .foregroundColor(.white)
+                    .font(.system(size: size * 0.5))
+            }
+
+            if tile.type.needsStreetConnection && !tile.connected {
+                Rectangle()
+                    .fill(Color.black.opacity(0.5))
+                    .blendMode(.multiply)
+                    .frame(width: size, height: size)
+
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(.red)
+                    .frame(width: size, height: size)
+            }
+        }
+    }
+}
+
+struct TileViewForType: View {
+    var tileType: TileType
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .foregroundColor(tileType.color)
+                .frame(width: size, height: size)
+
+            if tileType == .streets {
+                Image("street_straight_LR")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+            } else if tileType == .residential {
+                Image("Hou_1")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+            } else if tileType == .commercial {
+                Image("Com_1")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+            } else if tileType == .industrial {
+                Image("Ind_1")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+            } else if tileType == .renewableEnergy {
+                Image("Ren_1")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+            } else if tileType == .nonRenewableEnergy {
+                Image("Con_1")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+            }else {
+                Image(systemName: tileType.iconName)
                     .foregroundColor(.white)
                     .font(.system(size: size * 0.5))
             }
@@ -572,6 +678,9 @@ struct TileView: View {
 class Tile: Identifiable, ObservableObject {
     let id = UUID()
     let type: TileType
+
+    let randomVariant: Int
+
     @Published var needsEnergy: Int
     @Published var producesEnergy: Int
     @Published var connected: Bool = false
@@ -580,6 +689,8 @@ class Tile: Identifiable, ObservableObject {
         self.type = type
         self.needsEnergy = type.needsEnergy
         self.producesEnergy = type.producesEnergy
+
+        self.randomVariant = Int.random(in: 1...4)
     }
 }
 
@@ -591,8 +702,6 @@ enum TileType: String, CaseIterable {
     case parks
     case renewableEnergy
     case nonRenewableEnergy
-    case water
-    case landfill
 
     var iconName: String {
         switch self {
@@ -603,8 +712,6 @@ enum TileType: String, CaseIterable {
         case .parks:                return "leaf.fill"
         case .renewableEnergy:      return "sun.max.fill"
         case .nonRenewableEnergy:   return "flame.fill"
-        case .water:                return "drop.fill"
-        case .landfill:             return "trash.fill"
         }
     }
 
@@ -617,8 +724,6 @@ enum TileType: String, CaseIterable {
         case .parks:                return .green
         case .renewableEnergy:      return .cyan
         case .nonRenewableEnergy:   return .black
-        case .water:                return .blue
-        case .landfill:             return .brown
         }
     }
 
@@ -642,7 +747,7 @@ enum TileType: String, CaseIterable {
     // Which tile types need road adjacency to “activate”
     var needsStreetConnection: Bool {
         switch self {
-        case .residential, .commercial, .industrial, .nonRenewableEnergy, .landfill:
+        case .residential, .commercial, .industrial, .nonRenewableEnergy:
             return true
         default:
             return false
