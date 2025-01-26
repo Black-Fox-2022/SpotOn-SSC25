@@ -10,7 +10,7 @@ import SwiftUI
 import Charts
 
 struct CityKitView: View {
-    static let rows: Int = 8
+    static let rows: Int = 10
     static let columns: Int = 10
     static let tileSize: CGFloat = 45
 
@@ -57,6 +57,104 @@ struct CityKitView: View {
 
 
     var body: some View {
+        VStack {
+            HStack {
+                Spacer()
+                HUDBar()
+                Spacer()
+            }
+            HStack {
+                VStack(alignment: .center, spacing: 20) {
+
+                    HStack {
+                        VStack(spacing: 0) {
+                            ForEach(0..<Self.rows, id: \.self) { row in
+                                HStack(spacing: 0) {
+                                    ForEach(0..<Self.columns, id: \.self) { column in
+                                        GridCellView(
+                                            tile: $grid[row][column],
+                                            tileSize: Self.tileSize,
+                                            randomNum: backgroundIDs[row][column],
+                                            onDragTile: { removedTile in
+                                                stacks[removedTile.type]?.append(removedTile)
+                                                recalculateResources()
+                                            },
+                                            onTapCell: {
+                                                if let existingTile = grid[row][column] {
+                                                    // Remove tile on tap
+                                                    removeTile(existingTile, row: row, column: column)
+                                                } else {
+                                                    // Place a new tile if one is selected
+                                                    placeSelectedTile(atRow: row, column: column)
+                                                }
+                                            },
+                                            getStreetType: {
+                                                determineStreetType(for: row, column: column)
+                                            }
+                                        )
+                                        .addBorder(width: 0.5, cornerRadius: 0,
+                                                   topLeading: row == 0 && column == 0 ? 10 : 0,
+                                                   bottomLeading: row == CityKitView.rows - 1 && column == 0 && column == 0 ? 10 : 0,
+                                                   topTrailing: row == 0 && column == CityKitView.columns - 1 ? 10 : 0,
+                                                   bottomTrailing: row == CityKitView.rows - 1 && column == CityKitView.columns - 1 ? 10 : 0)
+                                        .onDrop(of: [.utf8PlainText], isTargeted: nil) { providers in
+                                            handleDrop(providers: providers, row: row, column: column)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .padding(10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color(.secondarySystemBackground))
+                        )
+
+                        VStack {
+                            ForEach(TileType.allCases, id: \.self) { type in
+                                Button {
+                                    lightFeedback()
+                                    if selectedTileType == type {
+                                        selectedTileType = nil
+                                    }else {
+                                        selectedTileType = type
+                                    }
+                                } label: {
+                                    TileViewForType(tileType: type, size: CityKitView.tileSize)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color(.secondarySystemBackground))
+                        )
+                    }
+
+                    /*VStack(alignment: .leading, spacing: 20) {
+                        HStack(spacing: 16) {
+                            ForEach(TileType.allCases, id: \.self) { type in
+                                Button {
+                                    lightFeedback()
+                                    if selectedTileType == type {
+                                        selectedTileType = nil
+                                    }else {
+                                        selectedTileType = type
+                                    }
+                                } label: {
+                                    TileViewForType(tileType: type, size: CityKitView.tileSize)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }*/
+
+                    Spacer()
+                }
+            }
+        }
+/*
         HStack (alignment: .top){
             ScrollView {
                 VStack (alignment: .leading, spacing: 12){
@@ -116,7 +214,7 @@ struct CityKitView: View {
             }
 
             VStack(alignment: .center, spacing: 20) {
-
+                HUDBar()
                 VStack(spacing: 1) {
                     ForEach(0..<Self.rows, id: \.self) { row in
                         HStack(spacing: 1) {
@@ -163,27 +261,6 @@ struct CityKitView: View {
                                 }
                             } label: {
                                 TileViewForType(tileType: type, size: CityKitView.tileSize)
-                                /*VStack(spacing: 6) {
-                                    ZStack {
-                                        Rectangle()
-                                            .foregroundColor(type.color)
-                                            .frame(width: Self.tileSize, height: Self.tileSize)
-                                            .cornerRadius(6)
-                                        Image(systemName: type.iconName)
-                                            .foregroundColor(.white)
-                                            .font(.system(size: Self.tileSize * 0.4))
-                                    }
-                                    Text("\(stacks[type]?.count ?? 0)")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(
-                                            selectedTileType == type ? Color.accentColor : Color.clear,
-                                            lineWidth: 2
-                                        )
-                                )*/
                             }
                             .buttonStyle(.plain)
                         }
@@ -213,10 +290,9 @@ struct CityKitView: View {
             }
         }
         .padding(30)
-        .background(Color.gray.opacity(0.2))
         .onAppear {
             setupInitialCity()
-        }
+        }*/
     }
 
     private func nextDay() {
@@ -316,6 +392,8 @@ struct CityKitView: View {
                             }
                         }
                     }
+
+
                     tile.connected = hasStreetNeighbor
                 } else {
                     // e.g. parks, water, renewable, etc.
@@ -566,7 +644,7 @@ struct GridCellView: View {
 }
 
 struct TileView: View {
-    var tile: Tile
+    @ObservedObject var tile: Tile
     let size: CGFloat
 
     var body: some View {
@@ -618,7 +696,7 @@ struct TileView: View {
                     .frame(width: size, height: size)
 
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundColor(.red)
+                    .foregroundColor(.yellow)
                     .frame(width: size, height: size)
             }
         }
@@ -669,8 +747,11 @@ struct TileViewForType: View {
                 Image(systemName: tileType.iconName)
                     .foregroundColor(.white)
                     .font(.system(size: size * 0.5))
+                    .frame(width: size, height: size)
             }
         }
+        .frame(width: size, height: size)
+        .addBorder(.clear, cornerRadius: 5)
     }
 }
 
@@ -744,7 +825,6 @@ enum TileType: String, CaseIterable {
         }
     }
 
-    // Which tile types need road adjacency to “activate”
     var needsStreetConnection: Bool {
         switch self {
         case .residential, .commercial, .industrial, .nonRenewableEnergy:
