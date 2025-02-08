@@ -17,7 +17,7 @@ struct ContentView: View {
             if currentMode == .intro{
                 IntroView(currentMode: $currentMode)
             }else if currentMode == .level1{
-                Level1()
+                Mission_Routing()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
