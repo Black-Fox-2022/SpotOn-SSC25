@@ -13,41 +13,80 @@ struct Mission_CallResponder: View {
 
 
     var body: some View {
-        HStack (spacing: 20){
+        VStack (spacing: 12){
+            HStack {
+                TimerText(isRunning: $isRunning)
 
-            conversationView()
+                Spacer()
 
-            VStack (spacing: 20){
-                HStack {
-                    TimerText(isRunning: $isRunning)
-
-                    Spacer()
-
-                    Button(action: {
-                        withAnimation(.spring) {
-                            isRunning.toggle()
-                        }
-                    }, label: {
-                        Text(isRunning ? "Finish Call" : "Begin Call")
-                            .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
-                    })
-                    .background(Color(hex: 0xf96407))
-                    .clipShape(.rect(cornerRadius: 15))
+                HStack (spacing: 0) {
+                    Text("Dispatcher ")
+                        .foregroundStyle(.primary.opacity(0.8))
+                    Text("Mission II")
+                        .foregroundStyle(Color(hex: 0xf96407))
                 }
-                .padding(10)
-                .background(.primary.opacity(0.05))
-                .clipShape(.rect(cornerRadius: 25))
+                .font(.system(size: 18, weight: .bold, design: .monospaced))
 
-                Map()
-                    .frame(width: 550)
-                    .clipShape(.rect(cornerRadius: 25))
-                ressourcesView()
+                Spacer()
+
+                Button(action: {
+                    withAnimation(.spring) {
+                        isRunning.toggle()
+                    }
+                }, label: {
+                    Text(isRunning ? "Finish Mission" : "Begin Call")
+                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                })
+                .background(Color(hex: 0xf96407))
+                .clipShape(.rect(cornerRadius: 10))
             }
-            .padding(.vertical, 10)
-            .padding(.trailing, 35)
+            .padding(10)
+            .background(.primary.opacity(0.05))
+            .clipShape(.rect(cornerRadius: 15))
+            .padding(.horizontal, 35)
+
+            HStack (spacing: 12){
+
+                conversationView()
+
+                VStack (spacing: 12){
+
+                    //ressourcesView()
+
+                    VStack {
+                        HStack {
+                            mapView()
+                                .frame(width: 400, height: 350)
+
+                        }
+                    }
+                    .padding()
+                    .frame(width: 575)
+                    .background(.primary.opacity(0.05))
+                    .clipShape(.rect(cornerRadius: 15))
+
+                    VStack {
+                        Spacer()
+                        Text("Select a station on the map to see send out units")
+                            .font(.system(size: 16, weight: .medium, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
+                            .frame(width: 300)
+                        Spacer()
+                    }
+                    .padding()
+                    .frame(width: 575)
+                    .background(.primary.opacity(0.05))
+                    .clipShape(.rect(cornerRadius: 15))
+
+
+                }
+                .padding(.trailing, 35)
+            }
         }
         //.redacted(reason: .placeholder)
     }
@@ -86,53 +125,6 @@ struct TimerText: View {
     }
 }
 
-struct conversationView: View {
-    var body: some View {
-        VStack (spacing: 10){
-            ZStack (alignment: .bottom) {
-                VStack (alignment: .leading, spacing: 10){
-                    Text("Conversation")
-                        .font(.system(size: 22, weight: .bold, design: .monospaced))
-                        .padding(.bottom)
-
-                    textBubble(text: "Hello! Please, I need help fast.", isIncoming: true)
-                    textBubble(text: "Where are you right now?", isIncoming: false)
-                    textBubble(text: "Infront of my house. Hauptstraße 59", isIncoming: true)
-                    textBubble(text: "What happened?", isIncoming: false)
-                    textBubble(text: "I messed up the pasta! The kitchen is burning!!!", isIncoming: true)
-
-                    Spacer()
-                }
-                .padding()
-                .frame(maxHeight: .infinity)
-                .background(.regularMaterial)
-                .clipShape(.rect(cornerRadius: 25))
-
-                VStack (spacing: 8){
-                    ScrollView(.horizontal) {
-                        HStack {
-                            answerOption(text: "Is anyone still in the building?")
-                            Spacer()
-                            answerOption(text: "Which pasta did you mess up?")
-                            Spacer()
-                            answerOption(text: "Can you see flames from the windows?")
-                        }
-                        .padding(10)
-                    }
-                    .padding(.horizontal, 1)
-                    .scrollIndicators(.hidden)
-                    .background(.primary.opacity(0.05))
-                    .clipShape(.rect(cornerRadius: 20))
-                }
-                .padding(10)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
-        .padding(.leading, 35)
-    }
-}
-
 enum engineStatus {
     case responding
     case inStation
@@ -146,7 +138,7 @@ struct ressourcesView: View {
 
     var body: some View {
         VStack (alignment: .leading, spacing: 0){
-            Text("Available Resources")
+            Text("Available Units")
                 .font(.system(size: 22, weight: .bold, design: .monospaced))
                 .padding(.bottom)
             HStack {
@@ -289,9 +281,9 @@ struct ressourcesView: View {
             .padding(.bottom, 10)
         }
         .padding()
-        .frame(width: 550)
-        .background(.regularMaterial)
-        .clipShape(.rect(cornerRadius: 25))
+        .frame(width: 600)
+        .background(Color.primary.opacity(0.05))
+        .clipShape(.rect(cornerRadius: 15))
     }
 }
 
@@ -356,6 +348,8 @@ struct answerOption: View {
 
 
 struct textBubble: View {
+    @Environment(\.colorScheme) var colorScheme
+
     var text: String
     var isIncoming: Bool = false
 
@@ -370,13 +364,13 @@ struct textBubble: View {
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
-                    .foregroundStyle(isIncoming ? .black : .white)
+                    .foregroundStyle(isIncoming ? colorScheme == .light ? .black : .white : Color(hex: 0xf96407))
                 if isIncoming {
-                    Spacer(minLength: 1)
+                    //Spacer(minLength: 1)
                 }
             }
             .padding()
-            .background(isIncoming ? .black.opacity(0.1) : Color(hex: 0xf96407))
+            .background(isIncoming ? colorScheme == .light ? .black.opacity(0.1) : .white.opacity(0.1) : Color(hex: 0xf96407).opacity(0.25))
             .clipShape(.rect(cornerRadius: 10))
 
             if isIncoming {
