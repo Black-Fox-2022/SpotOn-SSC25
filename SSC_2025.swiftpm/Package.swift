@@ -10,7 +10,7 @@ import AppleProductTypes
 let package = Package(
     name: "SSC_2025",
     platforms: [
-        .iOS("17.1")
+        .iOS("18.0")
     ],
     products: [
         .iOSApplication(

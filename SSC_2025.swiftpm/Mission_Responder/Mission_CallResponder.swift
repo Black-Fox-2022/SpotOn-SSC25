@@ -11,6 +11,7 @@ import MapKit
 struct Mission_CallResponder: View {
     @State private var isRunning: Bool = false
 
+    @State var selectedPoint: (row: Int, col: Int)? = nil
 
     var body: some View {
         VStack (spacing: 12){
@@ -40,7 +41,7 @@ struct Mission_CallResponder: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
                 })
-                .background(Color(hex: 0xf96407))
+                .background(orangeTint)
                 .clipShape(.rect(cornerRadius: 10))
             }
             .padding(10)
@@ -58,7 +59,7 @@ struct Mission_CallResponder: View {
 
                     VStack {
                         HStack {
-                            mapView()
+                            mapView(selectedPoint: $selectedPoint)
                                 .frame(width: 400, height: 350)
 
                         }
@@ -68,27 +69,126 @@ struct Mission_CallResponder: View {
                     .background(.primary.opacity(0.05))
                     .clipShape(.rect(cornerRadius: 15))
 
-                    VStack {
-                        Spacer()
-                        Text("Select a station on the map to see send out units")
-                            .font(.system(size: 16, weight: .medium, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
-                            .multilineTextAlignment(.center)
-                            .frame(width: 300)
-                        Spacer()
-                    }
-                    .padding()
-                    .frame(width: 575)
-                    .background(.primary.opacity(0.05))
-                    .clipShape(.rect(cornerRadius: 15))
+                    stationView(selectedPoint: $selectedPoint)
 
 
                 }
                 .padding(.trailing, 35)
             }
         }
-        //.redacted(reason: .placeholder)
+        .redacted(reason: .placeholder)
+    }
+}
+
+// Fire Central     : 17
+// Fire Secondary   : 17,24
+// EMS              : 16,6
+
+struct stationView: View {
+    @Binding var selectedPoint: (row: Int, col: Int)?
+
+    @State var testAnimation = false
+
+    var body: some View {
+        VStack {
+            if let selectedPoint = selectedPoint {
+                if selectedPoint.row == 4 && selectedPoint.col == 17 {
+                    station_firecentral()
+                } else if selectedPoint.row == 1 && selectedPoint.col == 0 {
+
+                }
+                else if selectedPoint.row == 1 && selectedPoint.col == 0 {
+
+                }
+
+            }else {
+                Spacer()
+                Text("Select a station on the map to see send out units")
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .frame(width: 300)
+
+
+                Spacer()
+            }
+        }
+        .padding()
+        .frame(width: 575)
+        .background(.primary.opacity(0.05))
+        .clipShape(.rect(cornerRadius: 15))
+    }
+}
+
+struct station_firecentral: View {
+    @State var FS_Main_FE_I_Status: engineStatus = .inStation
+    @State var FS_Main_FE_II_Status: engineStatus = .inStation
+    @State var FS_Main_RE_I_Status: engineStatus = .inStation
+    @State var FS_Main_LE_I_Status: engineStatus = .inStation
+
+    var body: some View {
+        VStack (alignment: .leading){
+            HStack {
+                Text("Central Fire Station")
+                    .font(.system(size: 20, weight: .semibold, design: .monospaced))
+                Spacer()
+                Button(action: {
+
+                }, label: {
+                    Text("Call All Units")
+                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                })
+                .background(orangeTint)
+                .clipShape(.rect(cornerRadius: 10))
+            }
+
+            ScrollView(.horizontal) {
+                HStack {
+                    EngineRow(
+                        title: "Fire Engine I",
+                        type: .fireEngine,
+                        status: FS_Main_FE_I_Status,
+                        action: {
+                            FS_Main_FE_I_Status = .responding
+                        }
+                    )
+
+                    EngineRow(
+                        title: "Fire Engine II",
+                        type: .fireEngine,
+                        status: FS_Main_FE_II_Status,
+                        action: {
+                            FS_Main_FE_II_Status = .responding
+                        }
+                    )
+                    EngineRow(
+                        title: "Command Truck I",
+                        type: .commandTruck,
+                        status: FS_Main_RE_I_Status,
+                        action: {
+                            FS_Main_RE_I_Status = .responding
+                        }
+                    )
+
+                    EngineRow(
+                        title: "Ladder Truck I",
+                        type: .ladderTruck,
+                        status: FS_Main_LE_I_Status,
+                        action: {
+                            FS_Main_LE_I_Status = .responding
+                        }
+                    )
+                }
+            }
+            .foregroundStyle(.secondary)
+            .padding(.leading, 10)
+            .scrollIndicators(.hidden)
+            Spacer()
+        }
     }
 }
 
@@ -167,7 +267,7 @@ struct ressourcesView: View {
                             )
 
                             EngineRow(
-                                title: "Rescue Truck I",
+                                title: "Command Truck I",
                                 status: FS_Main_RE_I_Status,
                                 action: {
                                     FS_Main_RE_I_Status = .responding
@@ -287,11 +387,18 @@ struct ressourcesView: View {
     }
 }
 
-import SwiftUI
+enum engineType {
+    case fireEngine
+    case ladderTruck
+    case commandTruck
+    case ambulance
+
+}
 
 struct EngineRow: View {
     let title: String
-    var status: engineStatus = .inStation
+    var type: engineType = .fireEngine
+    @State var status: engineStatus = .inStation
     let action: () -> Void
 
     private var buttonTitle: String {
@@ -300,6 +407,32 @@ struct EngineRow: View {
             return "Call"
         case .responding:
             return "Resp."
+        }
+    }
+
+    private var image: String {
+        switch type {
+            case .fireEngine:
+                return "Polling_LF20"
+            case .ladderTruck:
+                return "Polling_LF8"
+            case .commandTruck:
+                return "Polling_MZF"
+            case .ambulance:
+                return "Assists in medical emergencies"
+        }
+    }
+
+    private var engineTypeDescription: String {
+        switch type {
+            case .fireEngine:
+                return "Very effective combating fires"
+            case .ladderTruck:
+                return "Useful in reaching high places"
+            case .commandTruck:
+                return "Provides support to other units"
+            case .ambulance:
+                return "Assists in medical emergencies"
         }
     }
 
@@ -313,7 +446,7 @@ struct EngineRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
+        /*HStack(spacing: 0) {
             Button(action: action) {
                 Text(buttonTitle)
                     .foregroundStyle(buttonForegroundColor)
@@ -323,7 +456,42 @@ struct EngineRow: View {
             Text(title)
                 .font(.system(size: 16, weight: .medium, design: .monospaced))
                 .lineLimit(1)
+        }*/
+        ZStack (alignment: .topTrailing){
+            VStack (alignment: .leading, spacing: 0){
+                Image(image)
+                    .resizable()
+                    //.scaledToFit()
+                    //.clipped()
+                    .frame(width: 200, height: 140)
+                VStack (alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                    Text(engineTypeDescription)
+                        .font(.system(size: 14, weight: .medium, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2, reservesSpace: true)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 10)
+            }
+
+            Button(action: {
+                status = .responding
+            }, label: {
+                Image(systemName: "bell")
+                    .font(.system(size: 18, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.white)
+                    .padding(8)
+            })
+            .symbolEffect(.wiggle, value: status)
+            .background(orangeTint)
+            .clipShape(Circle())
+            .padding(10)
         }
+        .frame(width: 200)
+        .background(.primary.opacity(0.05))
+        .clipShape(.rect(cornerRadius: 15))
     }
 }
 

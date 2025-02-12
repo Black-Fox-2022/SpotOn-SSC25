@@ -8,32 +8,40 @@
 import SwiftUI
 
 struct mapView: View {
+
+    @Binding var selectedPoint: (row: Int, col: Int)?
+
+
+    // Fire Central     : 4,17
+    // Fire Secondary   : 17,24
+    // EMS              : 16,6
+
     let localMatrix: [[Int]] = [
-        // Row 0
+        // Row 0             10                  20
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
-        [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0],
-        // Row 5 (6..20 = 1)
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,0,0,0,0,0],
+        // 5
         [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
-        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
         [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0],
         [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,0],
         [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-        // Row 10 (2..26 = 1)
+        // 10
         [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
         [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
         [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
         [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
         [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-        // Row 15 (1..26 = 1)
+        // 15
         [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
         [1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,0,0,0,0,0,0],
         [0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0],
         [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,0,0,0],
-        // Row 20 (2..26 = 1)
+        // 20
         [0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,1,1,1,0,0,0,0,0],
     ]
 
@@ -41,9 +49,9 @@ struct mapView: View {
     let dotSize: CGFloat = 9
     let spacing: CGFloat = 6
 
-    @State private var activePoint: (row: Int, col: Int)? = (row: 20, col: 10)
+    @State private var activePoint: (row: Int, col: Int)? = (row: 9, col: 7)
     @State private var fadingPoint: (row: Int, col: Int)? = nil
-
+    
     @State private var emergencyLocation: String = ""
 
     var body: some View {
@@ -99,18 +107,25 @@ struct mapView: View {
                                 } else if localMatrix[row][col] == 2 {
                                     Button(action: {
                                         print("tapped on fire station")
-                                    }, label: {
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .foregroundColor(.blue)
-                                            .frame(width: dotSize, height: dotSize)
-                                    })
-                                    /*.overlay(
-                                        Color.red.opacity(0.0)
-                                            .frame(width: dotSize * 2, height: dotSize * 2)
-                                            .onTapGesture{
-                                                print("tappedOnOverlay")
+                                        withAnimation(.spring) {
+                                            if selectedPoint == nil {
+                                                selectedPoint = (row: row, col: col)
+                                            }else {
+                                                selectedPoint = nil
                                             }
-                                    )*/
+                                        }
+                                    }, label: {
+                                        if let selectedPoint = selectedPoint, selectedPoint.row == row && selectedPoint.col == col {
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .foregroundColor(orangeTint.opacity(0.75))
+                                                .frame(width: dotSize, height: dotSize)
+                                        }else {
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .foregroundColor(orangeTint.opacity(0.5))
+                                                .frame(width: dotSize, height: dotSize)
+                                        }
+                                    })
+                                    .containerShape(Rectangle())
                                 }else {
                                     RoundedRectangle(cornerRadius: 10)
                                         .foregroundColor(.clear)
@@ -126,10 +141,6 @@ struct mapView: View {
             Spacer()
         }
         .padding()
-        //.frame(width: 600)
-        //.frame(maxHeight: .infinity)
-        //.background(.primary.opacity(0.05))
-        //.clipShape(.rect(cornerRadius: 15))
         .onAppear{
             startFlashingMode()
         }
@@ -138,12 +149,11 @@ struct mapView: View {
     @State var flashingTimer: Timer?
 
     func startFlashingMode() {
-        flashingTimer = Timer.scheduledTimer(withTimeInterval: Double.random(in: 7...8), repeats: true) { _ in
+        flashingTimer = Timer.scheduledTimer(withTimeInterval: 6, repeats: true) { _ in
             DispatchQueue.main.async {
-                print("Re Run")
                 activePoint = nil
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
-                    activePoint = (row: 20, col: 10)
+                    activePoint = (row: 9, col: 7)
                 })
             }
         }
@@ -156,5 +166,5 @@ struct mapView: View {
 }
 
 #Preview {
-    mapView()
+    mapView(selectedPoint: .constant(nil))
 }

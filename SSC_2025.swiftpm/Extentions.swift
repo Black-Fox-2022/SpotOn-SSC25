@@ -18,3 +18,5 @@ extension Color {
         )
     }
 }
+
+let orangeTint: Color = Color(hex: 0xf96407)
