@@ -76,151 +76,51 @@ struct Mission_CallResponder: View {
                 .padding(.trailing, 35)
             }
         }
-        .redacted(reason: .placeholder)
+        //.redacted(reason: .placeholder)
     }
 }
 
-// Fire Central     : 17
-// Fire Secondary   : 17,24
-// EMS              : 16,6
-
-struct stationView: View {
-    @Binding var selectedPoint: (row: Int, col: Int)?
-
-    @State var testAnimation = false
-
-    var body: some View {
-        VStack {
-            if let selectedPoint = selectedPoint {
-                if selectedPoint.row == 4 && selectedPoint.col == 17 {
-                    station_firecentral()
-                } else if selectedPoint.row == 1 && selectedPoint.col == 0 {
-
-                }
-                else if selectedPoint.row == 1 && selectedPoint.col == 0 {
-
-                }
-
-            }else {
-                Spacer()
-                Text("Select a station on the map to see send out units")
-                    .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .frame(width: 300)
-
-
-                Spacer()
-            }
-        }
-        .padding()
-        .frame(width: 575)
-        .background(.primary.opacity(0.05))
-        .clipShape(.rect(cornerRadius: 15))
-    }
-}
-
-struct station_firecentral: View {
-    @State var FS_Main_FE_I_Status: engineStatus = .inStation
-    @State var FS_Main_FE_II_Status: engineStatus = .inStation
-    @State var FS_Main_RE_I_Status: engineStatus = .inStation
-    @State var FS_Main_LE_I_Status: engineStatus = .inStation
-
-    var body: some View {
-        VStack (alignment: .leading){
-            HStack {
-                Text("Central Fire Station")
-                    .font(.system(size: 20, weight: .semibold, design: .monospaced))
-                Spacer()
-                Button(action: {
-
-                }, label: {
-                    Text("Call All Units")
-                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                })
-                .background(orangeTint)
-                .clipShape(.rect(cornerRadius: 10))
-            }
-
-            ScrollView(.horizontal) {
-                HStack {
-                    EngineRow(
-                        title: "Fire Engine I",
-                        type: .fireEngine,
-                        status: FS_Main_FE_I_Status,
-                        action: {
-                            FS_Main_FE_I_Status = .responding
-                        }
-                    )
-
-                    EngineRow(
-                        title: "Fire Engine II",
-                        type: .fireEngine,
-                        status: FS_Main_FE_II_Status,
-                        action: {
-                            FS_Main_FE_II_Status = .responding
-                        }
-                    )
-                    EngineRow(
-                        title: "Command Truck I",
-                        type: .commandTruck,
-                        status: FS_Main_RE_I_Status,
-                        action: {
-                            FS_Main_RE_I_Status = .responding
-                        }
-                    )
-
-                    EngineRow(
-                        title: "Ladder Truck I",
-                        type: .ladderTruck,
-                        status: FS_Main_LE_I_Status,
-                        action: {
-                            FS_Main_LE_I_Status = .responding
-                        }
-                    )
-                }
-            }
-            .foregroundStyle(.secondary)
-            .padding(.leading, 10)
-            .scrollIndicators(.hidden)
-            Spacer()
-        }
-    }
-}
+import SwiftUI
 
 struct TimerText: View {
     @Binding var isRunning: Bool
-    @State private var elapsed: TimeInterval = 0
+    @State private var remainingTime: TimeInterval = 45.00
     @State private var timer: Timer? = nil
 
     var body: some View {
         Text(formattedTime)
             .font(.system(size: 20, weight: .semibold, design: .monospaced))
             .padding(.horizontal)
-
-            .onChange(of: isRunning) {
-                if !isRunning {
-                    timer?.invalidate()
-                    timer = nil
-                    //elapsed = 0
-                    isRunning = false
+            .onChange(of: isRunning) { newValue in
+                if newValue {
+                    startTimer()
                 } else {
-                    isRunning = true
-                    timer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { _ in
-                        elapsed += 0.01
-                    }
+                    stopTimer()
                 }
             }
     }
 
+    private func startTimer() {
+        timer?.invalidate() // Reset any previous timer
+        timer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { _ in
+            if remainingTime > 0 {
+                remainingTime -= 0.01
+            } else {
+                stopTimer()
+            }
+        }
+    }
+
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+        isRunning = false
+    }
+
     private var formattedTime: String {
-        let minutes = Int(elapsed) / 60
-        let seconds = Int(elapsed) % 60
-        let centiseconds = Int((elapsed - Double(Int(elapsed))) * 100)
+        let minutes = Int(remainingTime) / 60
+        let seconds = Int(remainingTime) % 60
+        let centiseconds = Int((remainingTime - Double(Int(remainingTime))) * 100)
         return String(format: "%02d:%02d:%02d", minutes, seconds, centiseconds)
     }
 }
@@ -389,9 +289,11 @@ struct ressourcesView: View {
 
 enum engineType {
     case fireEngine
+    case secondfireEngine
     case ladderTruck
     case commandTruck
     case ambulance
+    case bigambulance
 
 }
 
@@ -414,12 +316,16 @@ struct EngineRow: View {
         switch type {
             case .fireEngine:
                 return "Polling_LF20"
-            case .ladderTruck:
+            case .secondfireEngine:
                 return "Polling_LF8"
+            case .ladderTruck:
+                return "Peißenberg_DLK"
             case .commandTruck:
                 return "Polling_MZF"
             case .ambulance:
-                return "Assists in medical emergencies"
+                return "Sons_RTW"
+            case .bigambulance:
+                return "Sons_S-RTW"
         }
     }
 
@@ -427,12 +333,16 @@ struct EngineRow: View {
         switch type {
             case .fireEngine:
                 return "Very effective combating fires"
+            case .secondfireEngine:
+                return "Very effective combating fires"
             case .ladderTruck:
                 return "Useful in reaching high places"
             case .commandTruck:
                 return "Provides support to other units"
             case .ambulance:
                 return "Assists in medical emergencies"
+            case .bigambulance:
+                return "Can transport multiple patients"
         }
     }
 
@@ -467,6 +377,7 @@ struct EngineRow: View {
                 VStack (alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(.primary)
                     Text(engineTypeDescription)
                         .font(.system(size: 14, weight: .medium, design: .monospaced))
                         .foregroundStyle(.secondary)

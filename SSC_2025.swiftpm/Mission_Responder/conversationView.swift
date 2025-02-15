@@ -12,71 +12,85 @@ struct conversationView: View {
     let conversation: Conversation = Conversation(
         initialMessage: "Hello! Please, I need help fast.",
         steps: [
-            // Step 1: Ask about location (more challenging and varied)
+
+            // Step 1: Address / Location Clarification
             ConversationStep(options: [
                 ResponderOption(
+                    text: "What is your address?",
+                    callerReply: "I live at New Park Avenue 23."
+                    // ✅ Precise and useful – gets emergency responders to the location fast.
+                ),
+                ResponderOption(
+                    text: "Are you in a safe place?",
+                    callerReply: "I’m outside, but my house is burning!"
+                    // ⚠️ Gives context but doesn’t provide location immediately.
+                ),
+                ResponderOption(
                     text: "Where are you right now?",
-                    callerReply: "I'm at New Park Avenue 23. "
+                    callerReply: "I'm at home."
+                    // ❌ Not helpful – responders don’t know where ‘home’ is.
+                )
+            ]),
+
+            // Step 2: Identifying the Emergency
+            ConversationStep(options: [
+                ResponderOption(
+                    text: "What’s the emergency?",
+                    callerReply: "My kitchen is on fire!"
+                    // ✅ Clearly describes the situation.
+                ),
+                ResponderOption(
+                    text: "Do you need medical help?",
+                    callerReply: "No, it’s a fire emergency!"
+                    // ❌ Not directly useful – asking this too early may waste time.
+                ),
+                ResponderOption(
+                    text: "What happened?",
+                    callerReply: "I was cooking, and now my kitchen is burning."
+                    // ⚠️ Less direct but still useful.
+                )
+            ]),
+
+            // Step 3: Clarifying the Fire's Impact
+            ConversationStep(options: [
+                ResponderOption(
+                    text: "Is the fire spreading?",
+                    callerReply: "Yes, it’s moving beyond the kitchen!"
+                ),
+                ResponderOption(
+                    text: "Is there smoke outside?",
+                    callerReply: "There’s thick black smoke coming from the roof!"
                 ),
                 ResponderOption(
                     text: "What is your adress?",
                     callerReply: "I live at New Park Avenue 23."
-                ),
-                ResponderOption(
-                    text: "What happened?",
-                    callerReply: "I messed up my pasta!!"
                 )
             ]),
-            // Step 2: Ask what happened
+
+            // Step 4: Safety Confirmation
             ConversationStep(options: [
                 ResponderOption(
-                    text: "What exactly occurred?",
-                    callerReply: "I was cooking and messed up the pasta—now my kitchen is burning!"
+                    text: "Are you safe outside?",
+                    callerReply: "Yes, I’m standing on the street."
+                    // ✅ Confirms safety.
                 ),
                 ResponderOption(
-                    text: "Can you describe the emergency?",
-                    callerReply: "My kitchen caught fire when I accidentally left the pasta boiling."
+                    text: "Can you check inside?",
+                    callerReply: "No way, it’s way too dangerous!"
+                    // ❌ Dangerous suggestion.
                 ),
                 ResponderOption(
-                    text: "Please explain what went wrong.",
-                    callerReply: "I was preparing pasta and somehow ignited a fire in my kitchen!"
+                    text: "Is anyone else inside?",
+                    callerReply: "No, I’m alone."
+                    // ✅ Important for search & rescue.
                 )
             ]),
-            // Step 3: Ask about people or involvement
+
+            // Step 5: Final Confirmation
             ConversationStep(options: [
                 ResponderOption(
-                    text: "Is anyone else in the house affected?",
-                    callerReply: "No, it's just me here, but the fire is getting out of control."
-                ),
-                ResponderOption(
-                    text: "Is anyone injured?",
-                    callerReply: "I'm alone, thankfully, but the situation is severe."
-                ),
-                ResponderOption(
-                    text: "Should I prepare to send multiple units?",
-                    callerReply: "It's only me, but the fire is spreading quickly."
-                )
-            ]),
-            // Step 4: Ask for severity details
-            ConversationStep(options: [
-                ResponderOption(
-                    text: "Can you see flames or heavy smoke outside?",
-                    callerReply: "Yes, there's thick smoke and large flames visible."
-                ),
-                ResponderOption(
-                    text: "How extensive is the fire?",
-                    callerReply: "The flames are rapidly spreading from the kitchen to the living area."
-                ),
-                ResponderOption(
-                    text: "Is the fire contained or expanding?",
-                    callerReply: "It's not contained; it's quickly moving beyond the kitchen."
-                )
-            ]),
-            // Step 5: Final (lost) step with one reply option
-            ConversationStep(options: [
-                ResponderOption(
-                    text: "Help is on the way!",
-                    callerReply: "Thank you"
+                    text: "Stay safe, help is on the way!",
+                    callerReply: "Thank you!"
                 )
             ])
         ]
@@ -84,30 +98,30 @@ struct conversationView: View {
 
     @State private var messages: [Message] = []
     @State private var currentStep: Int = 0
+    @State private var preventAction: Bool = false
 
     var body: some View {
         VStack (spacing: 10){
             ZStack (alignment: .bottom) {
                 VStack (alignment: .leading, spacing: 10){
-                  //  Text("Conversation")
-                   //     .font(.system(size: 22, weight: .bold, design: .monospaced))
-                    //    .padding(.bottom)
-/*
-                    textBubble(text: "Hello! Please, I need help fast.", isIncoming: true)
-                    textBubble(text: "Where are you right now?", isIncoming: false)
-                    textBubble(text: "Infront of my house. Hauptstraße 59", isIncoming: true)
-                    textBubble(text: "What happened?", isIncoming: false)
-                    textBubble(text: "I messed up the pasta! The kitchen is burning!!!", isIncoming: true)
-*/
                     ScrollViewReader { proxy in
                         ScrollView {
                             VStack (spacing: 15){
                                 ForEach(messages) { message in
                                     textBubble(text: message.text, isIncoming: message.isIncoming)
+                                        .id(message.id)
+                                }
+                            }
+                            Spacer(minLength: 200)
+                        }
+                        .scrollIndicators(.hidden)
+                        .onChange(of: messages.count) { _ in
+                            if messages.count > 0 {
+                                withAnimation(.easeOut) {
+                                    proxy.scrollTo(messages.last?.id, anchor: .top)
                                 }
                             }
                         }
-                        .scrollIndicators(.hidden)
                     }
 
                     Spacer()
@@ -123,21 +137,27 @@ struct conversationView: View {
                             HStack {
                                 ForEach(conversation.steps[currentStep].options) { option in
                                     Button(action: {
-                                        // Append responder's message.
                                         messages.append(Message(text: option.text, isIncoming: false))
-                                        // Append caller's fixed reply.
-                                        messages.append(Message(text: option.callerReply, isIncoming: true))
-                                        // Advance to the next conversation step.
-                                        currentStep += 1
+                                        preventAction = true
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75, execute: {
+                                            withAnimation(.spring) {
+                                                messages.append(Message(text: option.callerReply, isIncoming: true))
+                                                currentStep += 1
+                                                preventAction = false
+                                            }
+                                        })
                                     }) {
                                         answerOption(text: option.text)
                                     }
                                 }
                             }
                             .padding(10)
+                            .disabled(preventAction)
                         }
                         .padding(.horizontal, 1)
                         .scrollIndicators(.hidden)
+                        .background(.primary.opacity(0.05))
+                        .background(.primary.opacity(0.05))
                         .background(.primary.opacity(0.1))
                         .background(.background)
                         .clipShape(RoundedRectangle(cornerRadius: 10))

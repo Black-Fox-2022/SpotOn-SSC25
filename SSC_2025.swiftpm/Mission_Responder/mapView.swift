@@ -108,20 +108,25 @@ struct mapView: View {
                                     Button(action: {
                                         print("tapped on fire station")
                                         withAnimation(.spring) {
-                                            if selectedPoint == nil {
+                                            if let point = selectedPoint {
+                                                if point == (row: row, col: col) {
+                                                    selectedPoint = nil
+                                                    print("point: \(selectedPoint)")
+                                                }else {
+                                                    selectedPoint = (row: row, col: col)
+                                                }
+                                            } else {
                                                 selectedPoint = (row: row, col: col)
-                                            }else {
-                                                selectedPoint = nil
                                             }
                                         }
                                     }, label: {
                                         if let selectedPoint = selectedPoint, selectedPoint.row == row && selectedPoint.col == col {
                                             RoundedRectangle(cornerRadius: 10)
-                                                .foregroundColor(orangeTint.opacity(0.75))
+                                                .foregroundColor(.blue)
                                                 .frame(width: dotSize, height: dotSize)
                                         }else {
                                             RoundedRectangle(cornerRadius: 10)
-                                                .foregroundColor(orangeTint.opacity(0.5))
+                                                .foregroundColor(.blue.opacity(0.5))
                                                 .frame(width: dotSize, height: dotSize)
                                         }
                                     })
