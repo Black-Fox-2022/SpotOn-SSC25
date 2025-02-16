@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import AVFoundation
+import TipKit
 
 // Fire Central     : 4, 17
 // Fire Secondary   : 17,22
@@ -13,6 +15,7 @@ import SwiftUI
 
 struct stationView: View {
     @Binding var selectedPoint: (row: Int, col: Int)?
+    @Binding var countRespondingUnits: [engineType]
 
     @State var testAnimation = false
 
@@ -20,39 +23,56 @@ struct stationView: View {
         VStack {
             if let selectedPoint = selectedPoint {
                 if selectedPoint.row == 4 && selectedPoint.col == 17 {
-                    station_firecentral()
+                    station_firecentral(countRespondingUnits: $countRespondingUnits)
                 } else if selectedPoint.row == 17 && selectedPoint.col == 22 {
-                    station_firesouth()
+                    station_firesouth(countRespondingUnits: $countRespondingUnits)
                 }
                 else if selectedPoint.row == 16 && selectedPoint.col == 6 {
-                    station_EMS_central()
+                    station_EMS_central(countRespondingUnits: $countRespondingUnits)
                 }
 
             }else {
-                Spacer()
-                Text("Select a station on the map to see send out units")
-                    .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .frame(width: 300)
-
-
-                Spacer()
+                VStack {
+                    HStack (spacing: 4){
+                        Text("Select a station")
+                        Circle()
+                            .fill(.blue.opacity(0.7))
+                            .frame(width: 10, height: 10)
+                            .padding(.trailing, 4)
+                        Text("on the map")
+                    }
+                    Text("to send out units")
+                }
+                .font(.system(size: 16, weight: .medium, design: .monospaced))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+                .frame(width: 300)
             }
         }
         .padding()
-        .frame(width: 575)
+        .frame(width: 575, height: 275)
         .background(.primary.opacity(0.05))
         .clipShape(.rect(cornerRadius: 15))
     }
 }
 
 struct station_firecentral: View {
+    @Binding var countRespondingUnits: [engineType]
+
     @State var FS_Main_FE_I_Status: engineStatus = .inStation
     @State var FS_Main_FE_II_Status: engineStatus = .inStation
     @State var FS_Main_RE_I_Status: engineStatus = .inStation
     @State var FS_Main_LE_I_Status: engineStatus = .inStation
+
+    var respEngineCount: Int {
+        return (
+            (FS_Main_FE_I_Status == .responding ? 1 : 0) +
+            (FS_Main_FE_II_Status == .responding ? 1 : 0) +
+            (FS_Main_RE_I_Status == .responding ? 1 : 0) +
+            (FS_Main_LE_I_Status == .responding ? 1 : 0)
+        )
+    }
 
     var body: some View {
         VStack (alignment: .leading){
@@ -60,27 +80,24 @@ struct station_firecentral: View {
                 Text("Central Fire Station")
                     .font(.system(size: 20, weight: .semibold, design: .monospaced))
                 Spacer()
-                Button(action: {
-
-                }, label: {
-                    Text("Call All Units")
-                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                })
-                .background(orangeTint)
-                .clipShape(.rect(cornerRadius: 10))
+                Text("\(respEngineCount)/4 Responding")
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .foregroundStyle(orangeTint)
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 6)
+                    .background(orangeTint.opacity(0.25))
+                    .clipShape(.rect(cornerRadius: 8))
             }
 
             ScrollView(.horizontal) {
-                HStack {
+                HStack (spacing: 10){
                     EngineRow(
                         title: "Fire Engine I",
                         type: .fireEngine,
                         status: FS_Main_FE_I_Status,
                         action: {
                             FS_Main_FE_I_Status = .responding
+                            countRespondingUnits.append(.fireEngine)
                         }
                     )
 
@@ -90,6 +107,7 @@ struct station_firecentral: View {
                         status: FS_Main_FE_II_Status,
                         action: {
                             FS_Main_FE_II_Status = .responding
+                            countRespondingUnits.append(.fireEngine)
                         }
                     )
                     EngineRow(
@@ -98,6 +116,7 @@ struct station_firecentral: View {
                         status: FS_Main_RE_I_Status,
                         action: {
                             FS_Main_RE_I_Status = .responding
+                            countRespondingUnits.append(.commandTruck)
                         }
                     )
 
@@ -107,22 +126,31 @@ struct station_firecentral: View {
                         status: FS_Main_LE_I_Status,
                         action: {
                             FS_Main_LE_I_Status = .responding
+                            countRespondingUnits.append(.ladderTruck)
                         }
                     )
                 }
             }
             .foregroundStyle(.secondary)
-            .padding(.leading, 10)
             .scrollIndicators(.hidden)
-            Spacer()
         }
     }
 }
 
 struct station_firesouth: View {
-    @State var FS_West_FE_I_Status: engineStatus = .inStation
-    @State var FS_West_FE_II_Status: engineStatus = .inStation
-    @State var FS_West_LE_I_Status: engineStatus = .inStation
+    @Binding var countRespondingUnits: [engineType]
+
+    @State var FS_South_FE_I_Status: engineStatus = .inStation
+    @State var FS_South_FE_II_Status: engineStatus = .inStation
+    @State var FS_South_LE_I_Status: engineStatus = .inStation
+
+    var respEngineCount: Int {
+        return (
+            (FS_South_FE_I_Status == .responding ? 1 : 0) +
+            (FS_South_FE_II_Status == .responding ? 1 : 0) +
+            (FS_South_LE_I_Status == .responding ? 1 : 0)
+        )
+    }
 
     var body: some View {
         VStack (alignment: .leading){
@@ -130,62 +158,69 @@ struct station_firesouth: View {
                 Text("Southern Fire Station")
                     .font(.system(size: 20, weight: .semibold, design: .monospaced))
                 Spacer()
-                Button(action: {
-
-                }, label: {
-                    Text("Call All Units")
-                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                })
-                .background(orangeTint)
-                .clipShape(.rect(cornerRadius: 10))
+                Text("\(respEngineCount)/3 Responding")
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .foregroundStyle(orangeTint)
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 6)
+                    .background(orangeTint.opacity(0.25))
+                    .clipShape(.rect(cornerRadius: 8))
             }
 
             ScrollView(.horizontal) {
-                HStack {
+                HStack (spacing: 10){
                     EngineRow(
                         title: "Fire Engine I",
                         type: .fireEngine,
-                        status: FS_West_FE_I_Status,
+                        status: FS_South_FE_I_Status,
                         action: {
-                            FS_West_FE_I_Status = .responding
+                            FS_South_FE_I_Status = .responding
+                            countRespondingUnits.append(.fireEngine)
                         }
                     )
 
                     EngineRow(
                         title: "Fire Engine II",
                         type: .secondfireEngine,
-                        status: FS_West_FE_II_Status,
+                        status: FS_South_FE_II_Status,
                         action: {
-                            FS_West_FE_II_Status = .responding
+                            FS_South_FE_II_Status = .responding
+                            countRespondingUnits.append(.fireEngine)
                         }
                     )
 
                     EngineRow(
                         title: "Ladder Truck I",
                         type: .ladderTruck,
-                        status: FS_West_LE_I_Status,
+                        status: FS_South_LE_I_Status,
                         action: {
-                            FS_West_LE_I_Status = .responding
+                            FS_South_LE_I_Status = .responding
+                            countRespondingUnits.append(.ladderTruck)
                         }
                     )
                 }
             }
             .foregroundStyle(.secondary)
-            .padding(.leading, 10)
             .scrollIndicators(.hidden)
-            Spacer()
         }
     }
 }
 
 
 struct station_EMS_central: View {
+    @Binding var countRespondingUnits: [engineType]
+
     @State var FS_Main_AB_I_Status: engineStatus = .inStation
     @State var FS_Main_AB_II_Status: engineStatus = .inStation
     @State var FS_Main_XXLAB_I_Status: engineStatus = .inStation
+
+    var respEngineCount: Int {
+        return (
+            (FS_Main_AB_I_Status == .responding ? 1 : 0) +
+            (FS_Main_AB_II_Status == .responding ? 1 : 0) +
+            (FS_Main_XXLAB_I_Status == .responding ? 1 : 0)
+        )
+    }
 
     var body: some View {
         VStack (alignment: .leading){
@@ -193,27 +228,24 @@ struct station_EMS_central: View {
                 Text("EMS Station")
                     .font(.system(size: 20, weight: .semibold, design: .monospaced))
                 Spacer()
-                Button(action: {
-
-                }, label: {
-                    Text("Call All Units")
-                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                })
-                .background(orangeTint)
-                .clipShape(.rect(cornerRadius: 10))
+                Text("\(respEngineCount)/3 Responding")
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .foregroundStyle(orangeTint)
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 6)
+                    .background(orangeTint.opacity(0.25))
+                    .clipShape(.rect(cornerRadius: 8))
             }
 
             ScrollView(.horizontal) {
-                HStack {
+                HStack (spacing: 10){
                     EngineRow(
                         title: "Ambulance I",
                         type: .ambulance,
                         status: FS_Main_AB_I_Status,
                         action: {
                             FS_Main_AB_I_Status = .responding
+                            countRespondingUnits.append(.ambulance)
                         }
                     )
 
@@ -223,6 +255,7 @@ struct station_EMS_central: View {
                         status: FS_Main_AB_II_Status,
                         action: {
                             FS_Main_AB_II_Status = .responding
+                            countRespondingUnits.append(.ambulance)
                         }
                     )
 
@@ -232,14 +265,13 @@ struct station_EMS_central: View {
                         status: FS_Main_XXLAB_I_Status,
                         action: {
                             FS_Main_XXLAB_I_Status = .responding
+                            countRespondingUnits.append(.bigambulance)
                         }
                     )
                 }
             }
             .foregroundStyle(.secondary)
-            .padding(.leading, 10)
             .scrollIndicators(.hidden)
-            Spacer()
         }
     }
 }

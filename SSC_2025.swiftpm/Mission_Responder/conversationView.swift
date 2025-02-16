@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct conversationView: View {
+    @Binding var knowsLocation: Bool
 
     let conversation: Conversation = Conversation(
         initialMessage: "Hello! Please, I need help fast.",
@@ -62,7 +63,7 @@ struct conversationView: View {
                     callerReply: "There’s thick black smoke coming from the roof!"
                 ),
                 ResponderOption(
-                    text: "What is your adress?",
+                    text: "What is your address?",
                     callerReply: "I live at New Park Avenue 23."
                 )
             ]),
@@ -139,11 +140,25 @@ struct conversationView: View {
                                     Button(action: {
                                         messages.append(Message(text: option.text, isIncoming: false))
                                         preventAction = true
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75, execute: {
+
+                                        if option.text.contains("address") {
+                                            knowsLocation = true
+                                        }
+
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
                                             withAnimation(.spring) {
                                                 messages.append(Message(text: option.callerReply, isIncoming: true))
                                                 currentStep += 1
                                                 preventAction = false
+
+                                                if currentStep >= 4 && !knowsLocation {
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                                        withAnimation(.spring) {
+                                                            messages.append(Message(text: "By the way, I live at New Park Avenue 23.", isIncoming: true))
+                                                            knowsLocation = true
+                                                        }
+                                                    }
+                                                }
                                             }
                                         })
                                     }) {
@@ -173,66 +188,76 @@ struct conversationView: View {
         }
     }
 
-
-
-
-    let mediumConversation = Conversation(
-        initialMessage: "Hello! Please, I need help fast.",
-        steps: [
-            ConversationStep(options: [
-                ResponderOption(
-                    text: "Where are you right now?",
-                    callerReply: "I'm at Hauptstraße 59, in front of my house."
-                ),
-                ResponderOption(
-                    text: "What's your exact location? Tell me your address.",
-                    callerReply: "I'm at Hauptstraße 59, near the park."
-                ),
-                ResponderOption(
-                    text: "Are you trying to order pizza or something?",
-                    callerReply: "No, I'm not ordering pizza; I'm in trouble at Hauptstraße 59."
-                )
-            ]),
-            ConversationStep(options: [
-                ResponderOption(
-                    text: "What happened?",
-                    callerReply: "The kitchen caught fire because I messed up the pasta!"
-                ),
-                ResponderOption(
-                    text: "Explain what went wrong, please.",
-                    callerReply: "I was cooking pasta and accidentally set the kitchen on fire."
-                ),
-                ResponderOption(
-                    text: "Was that pasta or a prank call?",
-                    callerReply: "This is no joke—my pasta mishap led to a kitchen fire!"
-                )
-            ])
-        ]
-    )
-
 }
 
-// A single message bubble.
+struct answerOption: View {
+    var text: String
+
+    var body: some View {
+            Text(text)
+                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal)
+                    .frame(height: 60)
+                    .frame(maxWidth: 180)
+                    .background(orangeTint)
+                    .clipShape(.rect(cornerRadius: 10))
+    }
+}
+
+
+struct textBubble: View {
+    @Environment(\.colorScheme) var colorScheme
+
+    var text: String
+    var isIncoming: Bool = false
+
+    var body: some View {
+        HStack{
+            if !isIncoming {
+                Spacer(minLength: 100)
+            }
+
+            HStack {
+                Text(text)
+                    .font(.system(size: 16, weight: .medium, design: .monospaced))
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+                    .foregroundStyle(isIncoming ? colorScheme == .light ? .black : .white : orangeTint)
+                if isIncoming {
+                    //Spacer(minLength: 1)
+                }
+            }
+            .padding()
+            .background(isIncoming ? colorScheme == .light ? .black.opacity(0.1) : .white.opacity(0.1) : orangeTint.opacity(0.25))
+            .clipShape(.rect(cornerRadius: 10))
+
+            if isIncoming {
+                Spacer(minLength: 125)
+            }
+        }
+    }
+}
+
+
 struct Message: Identifiable {
     let id = UUID()
     let text: String
     let isIncoming: Bool
 }
 
-// Each responder option includes the text the responder sees
-// and a fixed caller reply.
 struct ResponderOption: Identifiable {
     let id = UUID()
     let text: String
     let callerReply: String
 }
 
-// A conversation step holds three answer options.
 struct ConversationStep {
     let options: [ResponderOption]
 }
 
-// A conversation is defined by an initial caller message and a series of steps.
 struct Conversation {
     let initialMessage: String
     let steps: [ConversationStep]

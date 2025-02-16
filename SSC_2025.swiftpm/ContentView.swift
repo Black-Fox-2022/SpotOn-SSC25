@@ -5,7 +5,6 @@ enum Mode {
     case intro
     case level1
     case level2
-    case level3
 }
 
 struct ContentView: View {

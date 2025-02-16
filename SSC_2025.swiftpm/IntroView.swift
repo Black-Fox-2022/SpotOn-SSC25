@@ -54,6 +54,7 @@ struct IntroView: View {
     let spacing: CGFloat = 6
 
     @State private var activePoint: (row: Int, col: Int)? = nil
+    @State private var activePoint2: (row: Int, col: Int)? = nil
     @State private var fadingPoint: (row: Int, col: Int)? = nil
 
     @State private var showHint = true
@@ -105,20 +106,21 @@ struct IntroView: View {
                     .animation(.easeInOut(duration: 0.1), value: showHint)
             }
         }
-        .onAppear {
-            startFlashingMode()
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
         .onTapGesture {
             print("Tap")
             showHint = false
-            withAnimation(.easeInOut(duration: 1)) {
-                currentIndex = (currentIndex + 1)// % intoTextViews.count
+            withAnimation(.easeInOut(duration: 1.0)) {
+                currentIndex += 1
             }
             if currentIndex >= 3 {
                 stopFlashingMode()
                 startLevelMode()
             }
+        }
+        .onAppear {
+            startFlashingMode()
         }
     }
 
@@ -132,14 +134,16 @@ struct IntroView: View {
                                 RoundedRectangle(cornerRadius: 10)
                                     .foregroundColor(
                                         (activePoint?.row == row && activePoint?.col == col) ? Color.red :
-                                            (fadingPoint?.row == row && fadingPoint?.col == col) ? Color.red.opacity(0.6) :
-                                            Color.primary.opacity(0.5)
+                                        (activePoint2?.row == row && activePoint2?.col == col) ? Color.red :
+                                        (fadingPoint?.row == row && fadingPoint?.col == col) ? Color.red.opacity(0.6) :
+                                        Color.primary.opacity(0.5)
                                     )
                                     .frame(width: dotSize, height: dotSize)
                                     .animation(.spring(duration: 0.7), value: activePoint != nil)
                                     .animation(.easeOut(duration: 0.5), value: fadingPoint == nil)
 
-                                if activePoint?.row == row && activePoint?.col == col {
+                                if (activePoint?.row == row && activePoint?.col == col) ||
+                                   (activePoint2?.row == row && activePoint2?.col == col) {
                                     EmergencyRipple(dotSize: dotSize)
                                 }
                             }
@@ -158,9 +162,10 @@ struct IntroView: View {
     func startLevelMode() {
         fadingPoint = nil
         activePoint = nil
+        activePoint2 = nil
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            activePoint = (row: 31, col: 18)
+            activePoint2 = (row: 31, col: 18)
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) {
                 zoomedIn = true
@@ -176,7 +181,7 @@ struct IntroView: View {
 
     func startFlashingMode() {
         runDot()
-        flashingTimer = Timer.scheduledTimer(withTimeInterval: Double.random(in: 6...8), repeats: true) { _ in
+        flashingTimer = Timer.scheduledTimer(withTimeInterval: 7, repeats: true) { _ in
             DispatchQueue.main.async {
                 if !zoomedIn {
                     runDot()
@@ -221,6 +226,7 @@ struct IntroView: View {
         }
     }
 }
+
 
 struct EmergencyRipple: View {
     let dotSize: CGFloat
