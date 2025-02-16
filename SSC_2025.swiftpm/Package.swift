@@ -8,19 +8,19 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "SSC_2025",
+    name: "FireKIt",
     platforms: [
         .iOS("18.0")
     ],
     products: [
         .iOSApplication(
-            name: "SSC_2025",
+            name: "FireKIt",
             targets: ["AppModule"],
             bundleIdentifier: "com.lukas.ssc2025",
             teamIdentifier: "C6M6L6KSM9",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .earth),
+            appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.red),
             supportedDeviceFamilies: [
                 .pad,
@@ -28,7 +28,7 @@ let package = Package(
             ],
             supportedInterfaceOrientations: [
                 .landscapeRight,
-                .landscapeLeft,
+                .landscapeLeft
             ],
             appCategory: .education
         )
