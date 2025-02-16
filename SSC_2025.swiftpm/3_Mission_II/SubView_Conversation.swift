@@ -8,7 +8,10 @@
 import SwiftUI
 
 struct conversationView: View {
+    @Environment(\.colorScheme) var colorScheme
+
     @Binding var knowsLocation: Bool
+    @Binding var delayedLocationRequest: Bool
 
     let conversation: Conversation = Conversation(
         initialMessage: "Hello! Please, I need help fast.",
@@ -116,7 +119,7 @@ struct conversationView: View {
                             Spacer(minLength: 150)
                         }
                         .scrollIndicators(.hidden)
-                        .onChange(of: messages.count) { _ in
+                        .onChange(of: messages.count) {
                             if messages.count > 0 {
                                 withAnimation(.easeOut) {
                                     proxy.scrollTo(messages.last?.id, anchor: .top)
@@ -153,6 +156,7 @@ struct conversationView: View {
                                                 preventAction = false
 
                                                 if currentStep >= 4 && !knowsLocation {
+                                                    delayedLocationRequest = true
                                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                                         withAnimation(.spring) {
                                                             messages.append(Message(text: "By the way, I live at New Park Avenue 23.", isIncoming: true))
@@ -172,10 +176,8 @@ struct conversationView: View {
                         }
                         .padding(.horizontal, 1)
                         .scrollIndicators(.hidden)
-                        .background(.primary.opacity(0.05))
-                        .background(.primary.opacity(0.05))
                         .background(.primary.opacity(0.1))
-                        .background(.background)
+                        .background(colorScheme == .light ? .white : .black)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                     .padding(10)

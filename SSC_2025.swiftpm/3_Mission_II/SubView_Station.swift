@@ -16,6 +16,7 @@ import TipKit
 struct stationView: View {
     @Binding var selectedPoint: (row: Int, col: Int)?
     @Binding var countRespondingUnits: [engineType]
+    @Binding var respondingFromCentral: Bool
 
     @State var testAnimation = false
 
@@ -23,7 +24,7 @@ struct stationView: View {
         VStack {
             if let selectedPoint = selectedPoint {
                 ZStack {
-                    station_firecentral(countRespondingUnits: $countRespondingUnits)
+                    station_firecentral(countRespondingUnits: $countRespondingUnits, respondingFromCentral: $respondingFromCentral)
                         .opacity(selectedPoint.row == 4 && selectedPoint.col == 17 ? 1.0 : 0.0)
                     station_firesouth(countRespondingUnits: $countRespondingUnits)
                         .opacity(selectedPoint.row == 17 && selectedPoint.col == 22 ? 1.0 : 0.0)
@@ -59,6 +60,7 @@ struct stationView: View {
 
 struct station_firecentral: View {
     @Binding var countRespondingUnits: [engineType]
+    @Binding var respondingFromCentral: Bool
 
     @State var FS_Main_FE_I_Status: engineStatus = .inStation
     @State var FS_Main_FE_II_Status: engineStatus = .inStation
@@ -133,6 +135,9 @@ struct station_firecentral: View {
             }
             .foregroundStyle(.secondary)
             .scrollIndicators(.hidden)
+        }
+        .onChange(of: respEngineCount) {
+            respondingFromCentral = respEngineCount > 2
         }
     }
 }

@@ -19,7 +19,7 @@ struct ContentView: View {
             }else if currentMode == .level1{
                 Mission_CallResponder(currentMode: $currentMode)
             }else if currentMode == .end{
-                EndView()
+                EndView(currentMode: $currentMode)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

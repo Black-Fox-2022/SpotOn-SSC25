@@ -9,16 +9,11 @@ import SwiftUI
 import AVKit
 
 struct EndView: View {
+    @Binding var currentMode: Mode
+
     @State private var fadeIn = false
-    @State private var showSummaries = false
-
-    @State private var showClip1 = false
-    @State private var showClip2 = false
-    @State private var showClip3 = false
-
-    @State private var isPlayingClip1 = false
-    @State private var isPlayingClip2 = false
-    @State private var isPlayingClip3 = false
+    @State private var showSecondLine = false
+    @State private var showRestartBtn = false
 
     let link = FirefighterLink(
             country: "Germany",
@@ -36,10 +31,22 @@ struct EndView: View {
 
                 HStack {
                     Spacer()
-                    TypeWriterText(.constant("Firefighters are not just heroes.\nThey are people like you!"))
-                        .font(.system(size: 40, weight: .bold, design: .monospaced))
-                        .multilineTextAlignment(.leading)
-                        .foregroundColor(.primary)
+                    VStack {
+                        TypeWriterText(.constant("Firefighters are not just heroes."))
+                            .foregroundColor(.primary)
+                        if showSecondLine {
+                            TypeWriterText(.constant("They are people like you!"))
+                                .foregroundColor(orangeTint)
+                        }
+                        if showRestartBtn {
+                            Button("Restart Missions", action: {
+                                currentMode = .intro
+                            })
+                            .foregroundStyle(.secondary)
+                        }
+                    }
+                    .font(.system(size: 40, weight: .bold, design: .monospaced))
+                    .multilineTextAlignment(.leading)
                     Spacer()
                 }
 
@@ -51,8 +58,14 @@ struct EndView: View {
                         .foregroundColor(.primary.opacity(0.8))
 
                     HStack(spacing: 20) {
-                        Text("Created by Lukas")
-                        Text("🐦 Twitter")
+                        Text("Created with 🔥 by Lukas")
+                        /*Text("🐦 Twitter")
+                            .onTapGesture {
+                                mediumFeedback()
+                                if let url = URL(string: "https://www.twitter.com/custusfox") {
+                                    UIApplication.shared.open(url)
+                                }
+                            }*/
                     }
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
                     .foregroundColor(.primary.opacity(0.6))
@@ -69,7 +82,21 @@ struct EndView: View {
         .ignoresSafeArea()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear{
-            fadeIn = true
+            withAnimation(.bouncy) {
+                fadeIn = true
+            } completion: {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
+                    withAnimation(.easeInOut) {
+                        showSecondLine = true
+                    } completion: {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 , execute: {
+                            withAnimation(.bouncy) {
+                                showRestartBtn = true
+                            }
+                        })
+                    }
+                })
+            }
         }
     }
 
@@ -153,69 +180,4 @@ struct FirefighterLinkCard: View {
     }
 }
 
-class VideoPlayerManager: ObservableObject {
-    let player: AVPlayer
-
-    init() {
-        if let videoPath = Bundle.main.path(forResource: "VideoClip1", ofType: "MOV") {
-            let videoURL = URL(fileURLWithPath: videoPath)
-            self.player = AVPlayer(url: videoURL)
-
-            // 🔄 Looping Playback
-            NotificationCenter.default.addObserver(
-                forName: .AVPlayerItemDidPlayToEndTime,
-                object: self.player.currentItem,
-                queue: .main
-            ) { [weak self] _ in
-                self?.player.seek(to: .zero)
-                self?.player.play()
-            }
-
-            self.player.isMuted = true // 🔇 No Sound
-        } else {
-            self.player = AVPlayer()
-        }
-    }
-
-    // 🔄 Start or Stop Playback
-    func setPlayback(isPlaying: Bool) {
-        if isPlaying {
-            player.play()
-        } else {
-            player.pause()
-        }
-    }
-}
-
-// 🎥 Custom Video Player to Hide Controls
-struct AVPlayerControllerRepresented: UIViewControllerRepresentable {
-    var player: AVPlayer
-
-    func makeUIViewController(context: Context) -> AVPlayerViewController {
-        let controller = AVPlayerViewController()
-        controller.player = player
-        controller.showsPlaybackControls = false // ❌ Hides controls
-        controller.videoGravity = .resizeAspectFill // 🔥 Scales to fill
-        return controller
-    }
-
-    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {}
-}
-
-struct VideoView: View {
-    @StateObject private var videoManager = VideoPlayerManager()
-    @Binding var isPlaying: Bool
-
-    var body: some View {
-        AVPlayerControllerRepresented(player: videoManager.player)
-            .frame(width: 250, height: 300)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .onAppear {
-                videoManager.setPlayback(isPlaying: isPlaying)
-            }
-            .onChange(of: isPlaying) {
-                videoManager.setPlayback(isPlaying: isPlaying)
-            }
-    }
-}
 

@@ -11,6 +11,7 @@ struct mapView: View {
 
     @Binding var selectedPoint: (row: Int, col: Int)?
     @Binding var knowsLocation: Bool
+    @Binding var countRespondingUnits: [engineType]
 
     // Fire Central     : 4,17
     // Fire Secondary   : 17,24
@@ -151,29 +152,31 @@ struct mapView: View {
                 }
                 Spacer()
             }
+            .frame(maxWidth: .infinity)
             .containerShape(Rectangle())
 
             Spacer()
 
             if knowsLocation {
-                HStack (spacing: 20){
-                    HStack (spacing: 6){
-                        Circle()
-                            .fill(.red)
-                            .frame(width: 10, height: 10)
-                        Text("Emergency Location")
-                    }
-
-                    HStack (spacing: 6){
-                        Circle()
-                            .fill(.blue.opacity(0.7))
-                            .frame(width: 10, height: 10)
-                        Text("Fire/EMS Station")
+                ScrollView(.horizontal) {
+                    HStack(spacing: 10) {
+                        ForEach(unitCounts.keys.sorted(by: unitSortingOrder), id: \.self) { unit in
+                            if let count = unitCounts[unit], count > 0 {
+                                HStack(spacing: 5) {
+                                    Text("\(count)x")
+                                        .foregroundStyle(orangeTint)
+                                        .fontWeight(.semibold)
+                                    Text("\(unitName(for: unit, count: count))") // Handles pluralization
+                                }
+                                .font(.system(size: 15, weight: .medium, design: .monospaced))
+                                .padding(8)
+                                .background(.primary.opacity(0.05))
+                                .clipShape(.rect(cornerRadius: 10))
+                            }
+                        }
                     }
                 }
-                .font(.system(size: 16, weight: .medium, design: .monospaced))
-                .foregroundStyle(.secondary)
-                .containerShape(Rectangle())
+                .scrollIndicators(.hidden)
             }
         }
         .blur(radius: !knowsLocation ? 5 : 0)
@@ -213,8 +216,34 @@ struct mapView: View {
         flashingTimer?.invalidate()
         flashingTimer = nil
     }
+
+    private var unitCounts: [engineType: Int] {
+        Dictionary(grouping: countRespondingUnits, by: { $0 }).mapValues { $0.count }
+    }
+
+    private func unitName(for type: engineType, count: Int) -> String {
+        switch type {
+        case .fireEngine:
+            return count > 1 ? "Fire Engines" : "Fire Engine"
+        case .secondfireEngine:
+            return count > 1 ? "Second Fire Engines" : "Second Fire Engine"
+        case .ladderTruck:
+            return count > 1 ? "Ladder Trucks" : "Ladder Truck"
+        case .commandTruck:
+            return count > 1 ? "Command Trucks" : "Command Truck"
+        case .ambulance:
+            return count > 1 ? "Ambulances" : "Ambulance"
+        case .bigambulance:
+            return count > 1 ? "Big Ambulances" : "Big Ambulance"
+        }
+    }
+
+    private let unitSortingOrder: (engineType, engineType) -> Bool = { lhs, rhs in
+        let order: [engineType] = [.fireEngine, .secondfireEngine, .ladderTruck, .commandTruck, .ambulance, .bigambulance]
+        return order.firstIndex(of: lhs) ?? 0 < order.firstIndex(of: rhs) ?? 0
+    }
 }
 
 #Preview {
-    mapView(selectedPoint: .constant(nil), knowsLocation: .constant(true))
+    mapView(selectedPoint: .constant(nil), knowsLocation: .constant(true), countRespondingUnits: .constant([]))
 }

@@ -10,6 +10,8 @@ import MapKit
 import AVFoundation
 
 struct Mission_CallResponder: View {
+    @Environment(\.colorScheme) var colorScheme
+
     @Binding var currentMode: Mode
 
     @State var selectedPoint: (row: Int, col: Int)? = nil
@@ -25,6 +27,17 @@ struct Mission_CallResponder: View {
     @State private var conversationOffset: CGFloat = 0
     @State private var mapOffset: CGFloat = 0
     @State private var stationOffset: CGFloat = 0
+
+    @State var delayedLocationRequest: Bool = false
+    @State var respondingFromCentral: Bool = false
+
+    @State private var feedback1Desc = false
+
+    @State private var feedback2 = false
+    @State private var feedback2Desc = false
+
+    @State private var feedback3 = false
+    @State private var feedback3Desc = false
 
     var body: some View {
         VStack (spacing: 12){
@@ -58,9 +71,9 @@ struct Mission_CallResponder: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
                 })
-                .background(/*countRespondingUnits.count < 1 && */isRunning ? .secondary.opacity(0.5) : orangeTint)
+                .background(isRunning ? .secondary.opacity(0.5) : orangeTint)
                 .clipShape(.rect(cornerRadius: 10))
-                .disabled(/*countRespondingUnits.count < 1 && */isRunning)
+                .disabled(isRunning)
             }
             .padding(10)
             .background(.primary.opacity(0.05))
@@ -70,14 +83,45 @@ struct Mission_CallResponder: View {
 
             HStack (spacing: 12){
 
-                conversationView(knowsLocation: $knowsLocation)
+                conversationView(knowsLocation: $knowsLocation, delayedLocationRequest: $delayedLocationRequest)
+                    .opacity(!isRunning ? 0.3 : 1.0)
+                    .overlay(
+                        VStack {
+                            if !isRunning && !tutorialSheet{
+                                VStack(alignment: .leading) {
+                                    TypeWriterText(.constant(callerFeedbackTitle))
+                                        .foregroundStyle(orangeTint)
+                                        .frame(width: 400, alignment: .leading)
+                                    if feedback1Desc {
+                                        TypeWriterText(.constant(callerFeedbackDescription))
+                                            .multilineTextAlignment(.leading)
+                                    }
+                                }
+                                .frame(width: 400)
+                                .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                                .onAppear{
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.25, execute: {
+                                        withAnimation(.bouncy) {
+                                            feedback1Desc = true
+                                        } completion: {
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0, execute: {
+                                                withAnimation(.bouncy) {
+                                                    feedback2 = true
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                            }
+                        }
+                    )
                     .offset(x: conversationOffset)
 
                 VStack (spacing: 12){
 
                     VStack {
                         HStack {
-                            mapView(selectedPoint: $selectedPoint, knowsLocation: $knowsLocation)
+                            mapView(selectedPoint: $selectedPoint, knowsLocation: $knowsLocation, countRespondingUnits: $countRespondingUnits)
                                 .frame(width: 400)
                         }
                     }
@@ -85,15 +129,76 @@ struct Mission_CallResponder: View {
                     .frame(width: 575)
                     .background(.primary.opacity(0.05))
                     .clipShape(.rect(cornerRadius: 15))
+                    .opacity(!isRunning ? 0.3 : 1.0)
+                    .overlay(
+                        VStack {
+                            if !isRunning && feedback3 && !tutorialSheet{
+                                VStack (alignment: .leading){
+                                    TypeWriterText(.constant(stationFeedbackTitle))
+                                        .foregroundStyle(orangeTint)
+                                        .frame(width: 400, alignment: .leading)
+                                    if feedback3Desc {
+                                        TypeWriterText(.constant(stationFeedbackDescription))
+                                            .multilineTextAlignment(.leading)
+                                    }
+                                }
+                                .frame(width: 400)
+                                .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                                .onAppear{
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.25, execute: {
+                                        withAnimation(.bouncy) {
+                                            feedback3Desc = true
+                                        }
+                                    })
+                                }
+                            }
+                        }
+                    )
                     .offset(x: mapOffset)
-                    stationView(selectedPoint: $selectedPoint, countRespondingUnits: $countRespondingUnits)
+
+                    stationView(selectedPoint: $selectedPoint, countRespondingUnits: $countRespondingUnits, respondingFromCentral: $respondingFromCentral)
+                        .opacity(!isRunning ? 0.3 : 1.0)
+                        .overlay(
+                            VStack {
+                                if !isRunning && feedback2 && !tutorialSheet{
+                                    VStack (alignment: .leading){
+                                        TypeWriterText(.constant(unitFeedbackTitle))
+                                            .foregroundStyle(orangeTint)
+                                            .frame(width: 400, alignment: .leading)
+                                        if feedback2Desc {
+                                            TypeWriterText(.constant(unitFeedbackDescription))
+                                                .multilineTextAlignment(.leading)
+                                        }
+                                    }
+                                    .frame(width: 400)
+                                    .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                                    .onAppear{
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.25, execute: {
+                                            withAnimation(.bouncy) {
+                                                feedback2Desc = true
+                                            } completion: {
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 6.0, execute: {
+                                                    withAnimation(.bouncy) {
+                                                        feedback3 = true
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    }
+                                }
+                            }
+                        )
                         .offset(y: stationOffset)
 
                 }
                 .padding(.trailing, 35)
             }
-            .opacity(!isRunning ? 0.5 : 1.0)
             .disabled(!isRunning)
+        }
+        .onChange(of: isRunning) {
+            if !isRunning {
+                selectedPoint = nil
+            }
         }
         .sheet(isPresented: $tutorialSheet, content: {
             VStack(alignment: .center, spacing: 10) {
@@ -177,6 +282,78 @@ struct Mission_CallResponder: View {
         //.redacted(reason: .placeholder)
     }
 
+    private var callerFeedbackTitle: String {
+        return delayedLocationRequest ? "You could have been faster!" : "Amazing!"
+    }
+
+    private var callerFeedbackDescription: String {
+        return delayedLocationRequest
+            ? "You responded well, but you should have asked for the location earlier!"
+            : "You asked all the right questions and handled the call perfectly!"
+    }
+
+    private var stationFeedbackTitle: String {
+        return respondingFromCentral ? "Great choices!" : "Not the best option..."
+    }
+
+    private var stationFeedbackDescription: String {
+        return respondingFromCentral
+            ? "You dispatched units from the central fire station, ensuring a fast response!"
+            : "You selected units from a distant fire station. A closer one would have been faster."
+    }
+
+    private var unitFeedbackTitle: String {
+        let ideal = isIdealUnitSelection()
+        return ideal ? "Perfect unit selection!" : "Good choices, but could be improved!"
+    }
+
+    private var unitFeedbackDescription: String {
+        var messages: [String] = []
+
+        let fireEngines = countRespondingUnits.filter { $0 == .fireEngine || $0 == .secondfireEngine }.count
+        let ladders = countRespondingUnits.filter { $0 == .ladderTruck }.count
+        let ambulances = countRespondingUnits.filter { $0 == .ambulance || $0 == .bigambulance }.count
+        let commandTrucks = countRespondingUnits.filter { $0 == .commandTruck }.count
+
+        if fireEngines >= 2{
+            messages.append(ladders >= 1 ? "You sent out a good number of fire engines and your ladder truck selection was spot on!" : "You sent out a good number of fire engines, but a ladder truck would have been very useful as well.")
+        } else {
+            messages.append(ladders >= 1 ? "You could have sent at least 2 fire engines for a better response, but your ladder truck selection was spot on!" : "You could have sent at least 2 fire engines for a better response and a ladder truck would have been very useful as well.")
+        }
+
+        if ambulances >= 1 && ambulances <= 2 {
+            messages.append("Good decision including an ambulance.")
+        } else {
+            messages.append("Consider sending an ambulance for safety.")
+
+        }
+
+        if commandTrucks == 1 {
+            messages.append("A command truck is useful for coordination — good job!")
+        } else {
+            messages.append(commandTrucks == 0
+                ? "A command truck would have helped coordinate efforts better."
+                : "One command truck is usually enough for managing an incident.")
+
+        }
+
+        return messages.joined(separator: " \n")
+    }
+
+    // ✅ Checks if the unit selection is ideal
+    private func isIdealUnitSelection() -> Bool {
+        let fireEngines = countRespondingUnits.filter { $0 == .fireEngine || $0 == .secondfireEngine }.count
+        let ladders = countRespondingUnits.filter { $0 == .ladderTruck }.count
+        let ambulances = countRespondingUnits.filter { $0 == .ambulance || $0 == .bigambulance }.count
+        let commandTrucks = countRespondingUnits.filter { $0 == .commandTruck }.count
+
+        return (fireEngines >= 2 && fireEngines <= 3) &&
+               (ladders >= 1 && ladders <= 2) &&
+               (ambulances >= 1 && ambulances <= 2) &&
+               (commandTrucks == 1)
+    }
+
+
     private func exitAnimation() {
         withAnimation(.spring()) {
             isRunning = false
@@ -225,7 +402,7 @@ struct TimerText: View {
         Text(formattedTime)
             .frame(width: 100, alignment: .leading)
             .font(.system(size: 20, weight: .semibold, design: .monospaced))
-            .foregroundColor(remainingTime == 0 ? .red : remainingTime < 10 ? (flashRed ? .red : .white) : .primary)
+            .foregroundColor(remainingTime < 0.02 ? .red : remainingTime < 10 ? (flashRed ? .red : .primary) : .primary)
             .padding(.horizontal)
             .onChange(of: isRunning) {
                 if isRunning {
