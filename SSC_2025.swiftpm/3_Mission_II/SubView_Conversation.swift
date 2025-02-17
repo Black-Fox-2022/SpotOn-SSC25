@@ -143,6 +143,7 @@ struct conversationView: View {
                                     Button(action: {
                                         messages.append(Message(text: option.text, isIncoming: false))
                                         preventAction = true
+                                        SoundManager.shared.playSound(type: .buttonSecondary)
                                         lightFeedback()
                                         
                                         if option.text.contains("address") {

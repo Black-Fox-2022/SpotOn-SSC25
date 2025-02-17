@@ -79,6 +79,7 @@ struct EngineRow: View {
         Button(action: {
             withAnimation(.spring) {
                 mediumFeedback()
+                SoundManager.shared.playSound(type: .buttonAlert)
                 status = .responding
                 action()
             }
@@ -119,6 +120,7 @@ struct EngineRow: View {
             }
             .frame(width: 200)
         })
+        .disabled(status == .responding)
         .background(.primary.opacity(0.05))
         .clipShape(.rect(cornerRadius: 12))
     }

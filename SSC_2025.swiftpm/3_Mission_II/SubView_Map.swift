@@ -86,6 +86,7 @@ struct mapView: View {
                                     if knowsLocation {
                                         Button(action: {
                                             lightFeedback()
+                                            SoundManager.shared.playSound(type: .buttonSecondary)
                                             withAnimation(.spring) {
                                                 if let point = selectedPoint {
                                                     if point == (row: row, col: col) {
@@ -120,7 +121,7 @@ struct mapView: View {
                                         .containerShape(Rectangle())
                                         .overlay(
                                             Button(action: {
-                                                print("tapped on fire station 2")
+                                                SoundManager.shared.playSound(type: .buttonSecondary)
                                                 withAnimation(.spring) {
                                                     if let point = selectedPoint {
                                                         if point == (row: row, col: col) {

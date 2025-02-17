@@ -31,7 +31,7 @@ struct EndView: View {
 
                 HStack {
                     Spacer()
-                    VStack {
+                    VStack (spacing: 1){
                         TypeWriterText(.constant("Firefighters are not just heroes."))
                             .foregroundColor(.primary)
                         if showSecondLine {
@@ -39,10 +39,14 @@ struct EndView: View {
                                 .foregroundColor(orangeTint)
                         }
                         if showRestartBtn {
-                            Button("Restart Missions", action: {
-                                currentMode = .intro
+                            Button("Restart", action: {
+                                withAnimation(.spring) {
+                                    currentMode = .intro
+                                }
                             })
                             .foregroundStyle(.secondary)
+                            .font(.system(size: 16, weight: .regular, design: .monospaced))
+                            .padding(.top, 4)
                         }
                     }
                     .font(.system(size: 40, weight: .bold, design: .monospaced))
@@ -54,8 +58,8 @@ struct EndView: View {
 
                 VStack(spacing: 5) {
                     Text("Thank you for playing!")
-                        .font(.system(size: 20, weight: .semibold, design: .monospaced))
-                        .foregroundColor(.primary.opacity(0.8))
+                        .font(.system(size: 22, weight: .semibold, design: .monospaced))
+                        .foregroundColor(.primary.opacity(0.9))
 
                     HStack(spacing: 20) {
                         Text("Created with 🔥 by Lukas")
@@ -72,11 +76,11 @@ struct EndView: View {
                     .padding(.top, 5)
                 }
                 .animation(.easeOut(duration: 1.2).delay(1.5), value: fadeIn)
-                .padding(.bottom, 20)
+                .padding(.bottom, 30)
             }
 
             FirefighterLinkCard(link: link)
-                .padding()
+                .padding(25)
                 .animation(.easeOut(duration: 1.2).delay(1.5), value: fadeIn)
         }
         .ignoresSafeArea()
@@ -85,11 +89,11 @@ struct EndView: View {
             withAnimation(.bouncy) {
                 fadeIn = true
             } completion: {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: {
                     withAnimation(.easeInOut) {
                         showSecondLine = true
                     } completion: {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 , execute: {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5 , execute: {
                             withAnimation(.bouncy) {
                                 showRestartBtn = true
                             }

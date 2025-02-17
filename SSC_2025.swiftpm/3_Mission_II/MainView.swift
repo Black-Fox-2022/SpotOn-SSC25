@@ -58,6 +58,7 @@ struct Mission_CallResponder: View {
 
                 Button(action: {
                     successFeedback()
+                    SoundManager.shared.playSound(type: .buttonPrimary)
                     withAnimation(.spring) {
                         isRunning = false
                     }
@@ -173,11 +174,11 @@ struct Mission_CallResponder: View {
                                     .frame(width: 400)
                                     .font(.system(size: 16, weight: .semibold, design: .monospaced))
                                     .onAppear{
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.25, execute: {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: {
                                             withAnimation(.bouncy) {
                                                 feedback2Desc = true
                                             } completion: {
-                                                DispatchQueue.main.asyncAfter(deadline: .now() + 6.0, execute: {
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 7.0, execute: {
                                                     withAnimation(.bouncy) {
                                                         feedback3 = true
                                                     }
@@ -263,6 +264,7 @@ struct Mission_CallResponder: View {
 
                 Button(action: {
                     mediumFeedback()
+                    SoundManager.shared.playSound(type: .buttonPrimary)
                     tutorialSheet = false
                     isRunning = true
                 }) {
@@ -420,6 +422,7 @@ struct TimerText: View {
                 remainingTime -= 0.01
 
                 if remainingTime < 10 && !startedRedFlash {
+                    SoundManager.shared.playSound(type: .countDown)
                     startedRedFlash = true
                     startFlashing()
                 }
