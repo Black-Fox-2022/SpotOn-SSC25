@@ -172,7 +172,7 @@ struct IntroView: View {
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     withAnimation(.spring) {
-                        currentMode = .level1
+                        currentMode = .level
                     }
                 }
             }
@@ -299,6 +299,7 @@ struct IntroText2: View {
     }
 }
 
+/*
 struct IntroText3: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -308,6 +309,24 @@ struct IntroText3: View {
             Text("and learn how they respond")
                 .font(.system(size: 35, weight: .medium, design: .monospaced))
             Text("to emergencies.")
+                .font(.system(size: 35, weight: .medium, design: .monospaced))
+        }
+        .frame(width: 575)
+        .frame(maxHeight: .infinity, alignment: .center)
+        .padding()
+    }
+}
+*/
+
+struct IntroText3: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Speak clearly, act fast.")
+                .foregroundStyle(Color(.red))
+                .font(.system(size: 35, weight: .bold, design: .monospaced))
+            Text("Every detail matters,")
+                .font(.system(size: 35, weight: .medium, design: .monospaced))
+            Text("precision saves lives.")
                 .font(.system(size: 35, weight: .medium, design: .monospaced))
         }
         .frame(width: 575)

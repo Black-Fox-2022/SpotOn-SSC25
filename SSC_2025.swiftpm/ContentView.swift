@@ -3,20 +3,19 @@ import SwiftUI
 
 enum Mode {
     case intro
-    case level1
-    case level2
+    case level
     case end
 }
 
 struct ContentView: View {
 
-    @State var currentMode: Mode = .intro
+    @State var currentMode: Mode = .end
 
     var body: some View {
         ZStack {
             if currentMode == .intro{
                 IntroView(currentMode: $currentMode)
-            }else if currentMode == .level1{
+            }else if currentMode == .level{
                 Mission_CallResponder(currentMode: $currentMode)
             }else if currentMode == .end{
                 EndView(currentMode: $currentMode)

@@ -16,54 +16,44 @@ struct conversationView: View {
     let conversation: Conversation = Conversation(
         initialMessage: "Hello! Please, I need help fast.",
         steps: [
-
-            // Step 1: Address / Location Clarification
             ConversationStep(options: [
                 ResponderOption(
                     text: "What is your address?",
                     callerReply: "I live at New Park Avenue 23."
-                    // ✅ Precise and useful – gets emergency responders to the location fast.
                 ),
                 ResponderOption(
                     text: "Are you in a safe place?",
-                    callerReply: "I’m outside, but my house is burning!"
-                    // ⚠️ Gives context but doesn’t provide location immediately.
+                    callerReply: "I'm outside, but my house is burning!"
                 ),
                 ResponderOption(
                     text: "Where are you right now?",
                     callerReply: "I'm at home."
-                    // ❌ Not helpful – responders don’t know where ‘home’ is.
                 )
             ]),
 
-            // Step 2: Identifying the Emergency
             ConversationStep(options: [
                 ResponderOption(
-                    text: "What’s the emergency?",
-                    callerReply: "My kitchen is on fire!"
-                    // ✅ Clearly describes the situation.
+                    text: "Can I have your name?",
+                    callerReply: "This is Sarah."
                 ),
                 ResponderOption(
-                    text: "Do you need medical help?",
-                    callerReply: "No, it’s a fire emergency!"
-                    // ❌ Not directly useful – asking this too early may waste time.
+                    text: "Who is calling?",
+                    callerReply: "It's Sarah."
                 ),
+                ResponderOption(
+                    text: "Do you have pets?",
+                    callerReply: "Yes, I have two cats, but they are with me."
+                )
+            ]),
+
+            ConversationStep(options: [
                 ResponderOption(
                     text: "What happened?",
-                    callerReply: "I was cooking, and now my kitchen is burning."
-                    // ⚠️ Less direct but still useful.
-                )
-            ]),
-
-            // Step 3: Clarifying the Fire's Impact
-            ConversationStep(options: [
-                ResponderOption(
-                    text: "Is the fire spreading?",
-                    callerReply: "Yes, it’s moving beyond the kitchen!"
+                    callerReply: "I was cooking and trying to make pasta, and now everything's burning."
                 ),
                 ResponderOption(
-                    text: "Is there smoke outside?",
-                    callerReply: "There’s thick black smoke coming from the roof!"
+                    text: "What’s the emergency?",
+                    callerReply: "My pasta is on fire!"
                 ),
                 ResponderOption(
                     text: "What is your address?",
@@ -71,26 +61,36 @@ struct conversationView: View {
                 )
             ]),
 
-            // Step 4: Safety Confirmation
             ConversationStep(options: [
                 ResponderOption(
-                    text: "Are you safe outside?",
-                    callerReply: "Yes, I’m standing on the street."
-                    // ✅ Confirms safety.
+                    text: "Which pasta were you making?",
+                    callerReply: "Spaghetti, but that's not important now!"
                 ),
                 ResponderOption(
-                    text: "Can you check inside?",
-                    callerReply: "No way, it’s way too dangerous!"
-                    // ❌ Dangerous suggestion.
+                    text: "Is the fire spreading?",
+                    callerReply: "Yes, it's moving beyond the kitchen!"
                 ),
                 ResponderOption(
-                    text: "Is anyone else inside?",
-                    callerReply: "No, I’m alone."
-                    // ✅ Important for search & rescue.
+                    text: "Is there smoke outside?",
+                    callerReply: "Thick black smoke is coming from the window!"
                 )
             ]),
 
-            // Step 5: Final Confirmation
+            ConversationStep(options: [
+                ResponderOption(
+                    text: "Are you safe outside?",
+                    callerReply: "Yes, I'm standing on the street."
+                ),
+                ResponderOption(
+                    text: "Can you check inside?",
+                    callerReply: "No, that's way too dangerous!"
+                ),
+                ResponderOption(
+                    text: "Is anyone else in the building?",
+                    callerReply: "Maybe, I am not sure if all neighbors are out."
+                )
+            ]),
+
             ConversationStep(options: [
                 ResponderOption(
                     text: "Stay safe, help is on the way!",
@@ -158,10 +158,15 @@ struct conversationView: View {
 
                                                 if currentStep >= 4 && !knowsLocation {
                                                     delayedLocationRequest = true
-                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                                        withAnimation(.spring) {
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
                                                             messages.append(Message(text: "By the way, I live at New Park Avenue 23.", isIncoming: true))
                                                             knowsLocation = true
+                                                    }
+                                                }
+                                                if currentStep == 6 {
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                                        withAnimation(.spring) {
+                                                            messages.append(Message(text: "I am never gonna make pasta again!", isIncoming: true))
                                                         }
                                                     }
                                                 }
