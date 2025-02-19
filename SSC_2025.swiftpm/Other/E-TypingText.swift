@@ -10,21 +10,17 @@ import SwiftUI
 
 struct TypeWriterText: View {
 
-    // MARK: - Inits
-
-    init(_ text: Binding<String>) {
+    init(_ text: Binding<String>, delay: Double = 1) {
         self._text = text
         var attributedText = AttributedString(text.wrappedValue)
         attributedText.foregroundColor = .clear
         self._attributedText = State(initialValue: attributedText)
+        self._delay = State(initialValue: delay)
     }
-
-    // MARK: - Properties (Private)
 
     @Binding private var text: String
     @State private var attributedText: AttributedString
-
-    // MARK: - Properties (View)
+    @State private var delay: Double = 1
 
     var body: some View {
         Text(attributedText)
@@ -32,11 +28,9 @@ struct TypeWriterText: View {
             .onChange(of: text) { animateText() }
     }
 
-    // MARK: - Methods (Private)
-
     private func animateText(at position: Int = 0) {
         if position <= text.count {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05 * delay) {
                 let stringStart = String(text.prefix(position))
                 let stringEnd = String(text.suffix(text.count - position))
                 let attributedTextStart = AttributedString(stringStart)

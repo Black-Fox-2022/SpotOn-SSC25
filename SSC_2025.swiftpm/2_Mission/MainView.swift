@@ -85,7 +85,7 @@ struct Mission_CallResponder: View {
             HStack (spacing: 12){
 
                 conversationView(knowsLocation: $knowsLocation, delayedLocationRequest: $delayedLocationRequest)
-                    .opacity(!isRunning ? 0.3 : 1.0)
+                    .opacity(!isRunning ? 0.25 : 1.0)
                     .overlay(
                         VStack {
                             if !isRunning && !tutorialSheet{
@@ -130,7 +130,7 @@ struct Mission_CallResponder: View {
                     .frame(width: 575)
                     .background(.primary.opacity(0.05))
                     .clipShape(.rect(cornerRadius: 15))
-                    .opacity(!isRunning ? 0.3 : 1.0)
+                    .opacity(!isRunning ? 0.25 : 1.0)
                     .overlay(
                         VStack {
                             if !isRunning && feedback3 && !tutorialSheet{
@@ -158,7 +158,7 @@ struct Mission_CallResponder: View {
                     .offset(x: mapOffset)
 
                     stationView(selectedPoint: $selectedPoint, countRespondingUnits: $countRespondingUnits, respondingFromCentral: $respondingFromCentral)
-                        .opacity(!isRunning ? 0.3 : 1.0)
+                        .opacity(!isRunning ? 0.25 : 1.0)
                         .overlay(
                             VStack {
                                 if !isRunning && feedback2 && !tutorialSheet{
@@ -342,7 +342,6 @@ struct Mission_CallResponder: View {
         return messages.joined(separator: " \n")
     }
 
-    // ✅ Checks if the unit selection is ideal
     private func isIdealUnitSelection() -> Bool {
         let fireEngines = countRespondingUnits.filter { $0 == .fireEngine || $0 == .secondfireEngine }.count
         let ladders = countRespondingUnits.filter { $0 == .ladderTruck }.count
@@ -393,9 +392,9 @@ struct Mission_CallResponder: View {
 
 struct TimerText: View {
     @Binding var isRunning: Bool
-    @State private var remainingTime: TimeInterval = 45.00
+    @State private var remainingTime: TimeInterval = 60.00
     @State private var timer: Timer? = nil
-    @State private var flashTimer: Timer? = nil // Separate timer for flashing effect
+    @State private var flashTimer: Timer? = nil
 
     @State private var startedRedFlash = false
     @State private var flashRed = false
@@ -416,7 +415,7 @@ struct TimerText: View {
     }
 
     private func startTimer() {
-        timer?.invalidate() // Reset main timer
+        timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { _ in
             if remainingTime > 0 {
                 remainingTime -= 0.01
