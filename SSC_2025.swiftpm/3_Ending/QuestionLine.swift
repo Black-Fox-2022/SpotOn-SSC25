@@ -20,13 +20,11 @@ struct endViewLineTexts: View {
                 .font(.system(size: 80, weight: .bold, design: .monospaced))
             if showFullQuestion {
                 Text(fullQuestion)
-                //TypeWriterText(.constant(fullQuestion), delay: 1.5)
                     .foregroundStyle(.secondary)
                     .font(.system(size: 25, weight: .medium, design: .monospaced))
                     .padding()
             }
         }
-       // .frame(height: 90)
         .onAppear{
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
                 withAnimation(.easeIn) {

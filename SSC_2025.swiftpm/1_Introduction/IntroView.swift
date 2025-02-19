@@ -299,25 +299,6 @@ struct IntroText2: View {
     }
 }
 
-/*
-struct IntroText3: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("Explore their daily challenges")
-                .foregroundStyle(Color(.red))
-                .font(.system(size: 35, weight: .bold, design: .monospaced))
-            Text("and learn how they respond")
-                .font(.system(size: 35, weight: .medium, design: .monospaced))
-            Text("to emergencies.")
-                .font(.system(size: 35, weight: .medium, design: .monospaced))
-        }
-        .frame(width: 575)
-        .frame(maxHeight: .infinity, alignment: .center)
-        .padding()
-    }
-}
-*/
-
 struct IntroText3: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

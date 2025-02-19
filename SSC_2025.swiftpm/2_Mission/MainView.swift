@@ -123,7 +123,6 @@ struct Mission_CallResponder: View {
                     VStack {
                         HStack {
                             mapView(selectedPoint: $selectedPoint, knowsLocation: $knowsLocation, countRespondingUnits: $countRespondingUnits)
-                                .frame(width: 400)
                         }
                     }
                     .padding()
@@ -202,84 +201,7 @@ struct Mission_CallResponder: View {
             }
         }
         .sheet(isPresented: $tutorialSheet, content: {
-            VStack(alignment: .center, spacing: 10) {
-
-                Text("Mission II - Be a Dispatcher")
-                    .font(.system(size: 24, weight: .bold, design: .monospaced))
-                    .multilineTextAlignment(.center)
-
-                Text("In this mission, you'll step into the role of an emergency dispatcher. \nYou'll learn why being clear, direct, and precise is crucial when calling 911.")
-                    .font(.system(size: 18,weight: .medium, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-
-                Spacer()
-
-                VStack(alignment: .leading, spacing: 15) {
-                    HStack {
-                        Image(systemName: "person.wave.2.fill")
-                            .foregroundColor(orangeTint)
-                            .font(.system(size: 24))
-                            .frame(width: 60)
-                        VStack(alignment: .leading) {
-                            Text("Communicate with the caller")
-                                .font(.system(size: 20, weight: .semibold, design: .monospaced))
-                            Text("Choose the right questions and gather key details")
-                                .font(.system(size: 16, weight: .regular, design: .monospaced))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    HStack {
-                        Image(systemName: "car.2.fill")
-                            .foregroundColor(orangeTint)
-                            .font(.system(size: 24))
-                            .frame(width: 60)
-                        VStack(alignment: .leading) {
-                            Text("Deploy the right units")
-                                .font(.system(size: 20, weight: .semibold, design: .monospaced))
-                            Text("Decide which types of units could be useful")
-                                .font(.system(size: 16, weight: .regular, design: .monospaced))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    HStack {
-                        Image(systemName: "clock.fill")
-                            .foregroundColor(orangeTint)
-                            .font(.system(size: 24))
-                            .frame(width: 60)
-                        VStack(alignment: .leading) {
-                            Text("Act fast – You have 45 seconds!")
-                                .font(.system(size: 20, weight: .semibold, design: .monospaced))
-                            Text("Every second counts in a real emergency")
-                                .font(.system(size: 16, weight: .regular, design: .monospaced))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-
-                Spacer()
-
-                Button(action: {
-                    mediumFeedback()
-                    SoundManager.shared.playSound(type: .buttonPrimary)
-                    tutorialSheet = false
-                    isRunning = true
-                }) {
-                    Text("Start Mission")
-                        .font(.system(size: 18, weight: .semibold, design: .monospaced))
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(orangeTint)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .padding(.horizontal, 40)
-                }
-            }
-            .padding(30)
-            .interactiveDismissDisabled()
+            TutorialSheet(isRunning: $isRunning, tutorialSheet: $tutorialSheet)
         })
         //.redacted(reason: .placeholder)
     }

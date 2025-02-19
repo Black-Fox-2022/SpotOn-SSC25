@@ -235,9 +235,6 @@ struct textBubble: View {
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
                     .foregroundStyle(isIncoming ? colorScheme == .light ? .black : .white : orangeTint)
-                if isIncoming {
-                    //Spacer(minLength: 1)
-                }
             }
             .padding()
             .background(isIncoming ? colorScheme == .light ? .black.opacity(0.1) : .white.opacity(0.1) : orangeTint.opacity(0.25))

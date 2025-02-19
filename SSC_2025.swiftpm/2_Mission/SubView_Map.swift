@@ -47,7 +47,7 @@ struct mapView: View {
     ]
 
 
-    let dotSize: CGFloat = 9
+    let dotSize: CGFloat = 10
     let spacing: CGFloat = 0
 
     @State private var activePoint: (row: Int, col: Int)? = (row: 9, col: 7)
@@ -113,7 +113,7 @@ struct mapView: View {
                                                 .frame(width: dotSize + 6, height: dotSize + 6)
                                             }else {
                                                 RoundedRectangle(cornerRadius: 10)
-                                                    .foregroundColor(.blue.opacity(0.5))
+                                                    .foregroundColor(.blue.opacity(0.9))
                                                     .frame(width: dotSize, height: dotSize)
                                                     .padding(3)
                                             }
@@ -194,7 +194,6 @@ struct mapView: View {
                 }
             }
         )
-       //.padding()
         .onAppear{
             startFlashingMode()
         }

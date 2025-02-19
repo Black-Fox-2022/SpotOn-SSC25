@@ -8,8 +8,6 @@ import SwiftUI
 import AVFoundation
 import AVKit
 
-
-
 class VideoPlayerManager: ObservableObject {
     let player: AVPlayer
 

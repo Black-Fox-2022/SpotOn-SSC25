@@ -11,7 +11,7 @@ import AVKit
 struct EndView: View {
     @Binding var currentMode: Mode
 
-    @State private var fadeIn = false
+    @State private var showLinkField = false
     @State private var showLine2 = false
     @State private var showLine3 = false
     @State private var showLine4 = false
@@ -30,15 +30,14 @@ struct EndView: View {
 
 
     var body: some View {
-        ZStack (alignment: .bottomTrailing) {
-            VStack {
-                Spacer()
-
-                HStack {
-                    VStack (alignment: .leading, spacing: 4){
-                        TypeWriterText(.constant("Always remember!"))
-                            .font(.system(size: 100, weight: .bold, design: .monospaced))
-                            .foregroundStyle(orangeTint)
+        ZStack (alignment: .bottomLeading) {
+            ZStack (alignment: .bottomTrailing) {
+                VStack {
+                    HStack {
+                        VStack (alignment: .leading, spacing: 4){
+                            TypeWriterText(.constant("Always remember!"))
+                                .font(.system(size: 100, weight: .bold, design: .monospaced))
+                                .foregroundStyle(orangeTint)
                             VStack (alignment: .leading, spacing: 0){
                                 if showLine2 {
                                     endViewLineTexts(question: "Where", fullQuestion: "is the emergency location?")
@@ -50,40 +49,54 @@ struct EndView: View {
                                     endViewLineTexts(question: "Who", fullQuestion: "is calling?")
                                 }
                                 if showLine5 {
-                                    endViewLineTexts(question: "How many", fullQuestion: "people affected?")
+                                    endViewLineTexts(question: "How many", fullQuestion: "people are affected?")
                                 }
                                 if showLine6 {
                                     endViewLineTexts(question: "Wait", fullQuestion: "for further questions")
                                 }
                             }
+                            Spacer()
+                        }
+                        .multilineTextAlignment(.leading)
                         Spacer()
                     }
-                    .multilineTextAlignment(.leading)
+                    .padding(.horizontal, 10)
+
                     Spacer()
+
+                    Text("Created with 🔥 by Lukas")
+                        .font(.system(size: 16, weight: .medium, design: .monospaced))
+                        .foregroundColor(.primary.opacity(0.6))
+                        .padding(.top, 5)
+                        .opacity(showLinkField ? 1.0 : 0.0)
+                        .animation(.easeOut(duration: 1.2).delay(1.5), value: showLinkField)
                 }
-                .padding(.horizontal, 10)
+                .padding(30)
 
-                Spacer()
-
-                Text("Created with 🔥 by Lukas")
-                    .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .foregroundColor(.primary.opacity(0.6))
-                    .padding(.top, 5)
-                    .animation(.easeOut(duration: 1.2).delay(1.5), value: fadeIn)
+                VStack (spacing: 0){
+                    Image("Sketch-BAF")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 160, height: 150)
+                        .offset(x: -100)
+                    FirefighterLinkCard(link: link)
+                }
+                .padding(25)
+                .opacity(showLinkField ? 1.0 : 0.0)
+                .animation(.easeOut(duration: 1.2).delay(1.5), value: showLinkField)
             }
-            .padding(30)
 
-            VStack (spacing: 0){
-                Image("Sketch-BAF")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 160, height: 150)
-                    .offset(x: -100)
-                FirefighterLinkCard(link: link)
-            }
+            Button(action: {
+                withAnimation(.smooth) {
+                    currentMode = .intro
+                }
+            }, label: {
+                Image(systemName: "arrow.counterclockwise")
+                    .foregroundStyle(.secondary)
+            })
+            .tint(.primary)
             .padding(25)
-            .opacity(fadeIn ? 1.0 : 0.0)
-            .animation(.easeOut(duration: 1.2).delay(1.5), value: fadeIn)
+            .opacity(showLinkField ? 1.0 : 0.0)
         }
         .ignoresSafeArea()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -94,7 +107,6 @@ struct EndView: View {
                     } completion: {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.75 , execute: {
                             withAnimation(.bouncy) {
-                                showRestartBtn = true
                                 showLine3 = true
                             } completion: {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.75 , execute: {
@@ -110,7 +122,7 @@ struct EndView: View {
                                                         showLine6 = true
                                                     } completion: {
                                                         withAnimation(.bouncy) {
-                                                            fadeIn = true
+                                                            showLinkField = true
                                                         }
                                                     }
                                                 })
@@ -159,7 +171,6 @@ struct FirefighterLink: Identifiable {
     let countryEmoji: String
 }
 
-// 🎨 Firefighter Card View (Fully Clickable)
 struct FirefighterLinkCard: View {
     let link: FirefighterLink
 
