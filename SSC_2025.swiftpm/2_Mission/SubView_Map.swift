@@ -165,6 +165,7 @@ struct mapView: View {
                             if let count = unitCounts[unit], count > 0 {
                                 HStack(spacing: 5) {
                                     Text("\(count)x")
+                                        .contentTransition(.numericText())
                                         .foregroundStyle(orangeTint)
                                         .fontWeight(.semibold)
                                     Text("\(unitName(for: unit, count: count))") // Handles pluralization

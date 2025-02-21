@@ -307,7 +307,7 @@ struct IntroText3: View {
                 .font(.system(size: 35, weight: .bold, design: .monospaced))
             Text("Every detail matters,")
                 .font(.system(size: 35, weight: .medium, design: .monospaced))
-            Text("precision saves lives.")
+            Text("precision can save lives.")
                 .font(.system(size: 35, weight: .medium, design: .monospaced))
         }
         .frame(width: 575)

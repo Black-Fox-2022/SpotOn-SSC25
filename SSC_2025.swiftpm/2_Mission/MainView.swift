@@ -9,6 +9,17 @@ import SwiftUI
 import MapKit
 import AVFoundation
 
+struct ShakeEffect: GeometryEffect {
+    var travelDistance: CGFloat = 4
+    var shakesPerUnit: CGFloat = 3
+    var animatableData: CGFloat
+
+    func effectValue(size: CGSize) -> ProjectionTransform {
+        let translation = travelDistance * sin(animatableData * .pi * shakesPerUnit)
+        return ProjectionTransform(CGAffineTransform(translationX: translation, y: 0))
+    }
+}
+
 struct Mission_CallResponder: View {
     @Environment(\.colorScheme) var colorScheme
 
@@ -18,6 +29,7 @@ struct Mission_CallResponder: View {
     @State var countRespondingUnits: [engineType] = []
 
     @State private var isRunning: Bool = false
+    @State private var shakeTrigger: CGFloat = 0
     @State private var knowsLocation: Bool = false
 
     @State private var tutorialSheet: Bool = true
@@ -47,10 +59,11 @@ struct Mission_CallResponder: View {
                 Spacer()
 
                 HStack (spacing: 0) {
-                    Text("Dispatcher ")
-                        .foregroundStyle(.primary.opacity(0.8))
-                    Text("Mission II")
+                    Text("Mission")
                         .foregroundStyle(orangeTint)
+                    Text(" Dispatcher ")
+                        .foregroundStyle(.primary.opacity(0.8))
+
                 }
                 .font(.system(size: 18, weight: .bold, design: .monospaced))
 
@@ -72,9 +85,17 @@ struct Mission_CallResponder: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
                 })
-                .background(isRunning ? .secondary.opacity(0.5) : orangeTint)
-                .clipShape(.rect(cornerRadius: 10))
+                .background(isRunning ? .secondary.opacity(0.4) : orangeTint)
+                .clipShape(.rect(cornerRadius: 8))
                 .disabled(isRunning)
+                .modifier(ShakeEffect(animatableData: shakeTrigger))
+                .onTapGesture {
+                    if isRunning {
+                        withAnimation(.bouncy(duration: 0.75)) {
+                            shakeTrigger += 1
+                        }
+                    }
+                }
             }
             .padding(10)
             .background(.primary.opacity(0.05))
@@ -240,24 +261,24 @@ struct Mission_CallResponder: View {
         let commandTrucks = countRespondingUnits.filter { $0 == .commandTruck }.count
 
         if fireEngines >= 2{
-            messages.append(ladders >= 1 ? "You sent out a good number of fire engines and your ladder truck selection was spot on!" : "You sent out a good number of fire engines, but a ladder truck would have been very useful as well.")
+            messages.append(ladders >= 1 ? "You sent out a good number of fire engines and 1-2 ladders are fine too." : "You sent out a good number of fire engines, but 1-2 ladder trucks would have been very useful as well.")
         } else {
             messages.append(ladders >= 1 ? "You could have sent at least 2 fire engines for a better response, but your ladder truck selection was spot on!" : "You could have sent at least 2 fire engines for a better response and a ladder truck would have been very useful as well.")
         }
 
-        if ambulances >= 1 && ambulances <= 2 {
-            messages.append("Good decision including an ambulance.")
+        if ambulances == 1 {
+            messages.append("Good decision including an ambulance, maybe one more would've been even better.")
+        }else if ambulances == 2 {
+            messages.append("Very good idea to send 2 ambulances, better safe than sorry!")
         } else {
             messages.append("Consider sending an ambulance for safety.")
 
         }
 
         if commandTrucks == 1 {
-            messages.append("A command truck is useful for coordination — good job!")
+            messages.append("And a command truck is very useful for coordination — good job!")
         } else {
-            messages.append(commandTrucks == 0
-                ? "A command truck would have helped coordinate efforts better."
-                : "One command truck is usually enough for managing an incident.")
+            messages.append(" Though a command truck would have helped coordinate efforts better.")
 
         }
 
@@ -309,75 +330,6 @@ struct Mission_CallResponder: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             currentMode = .end
         }
-    }
-}
-
-struct TimerText: View {
-    @Binding var isRunning: Bool
-    @State private var remainingTime: TimeInterval = 60.00
-    @State private var timer: Timer? = nil
-    @State private var flashTimer: Timer? = nil
-
-    @State private var startedRedFlash = false
-    @State private var flashRed = false
-
-    var body: some View {
-        Text(formattedTime)
-            .frame(width: 100, alignment: .leading)
-            .font(.system(size: 20, weight: .semibold, design: .monospaced))
-            .foregroundColor(remainingTime < 0.02 ? .red : remainingTime < 10 ? (flashRed ? .red : .primary) : .primary)
-            .padding(.horizontal)
-            .onChange(of: isRunning) {
-                if isRunning {
-                    startTimer()
-                } else {
-                    stopTimer()
-                }
-            }
-    }
-
-    private func startTimer() {
-        timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { _ in
-            if remainingTime > 0 {
-                remainingTime -= 0.01
-
-                if remainingTime < 10 && !startedRedFlash {
-                    SoundManager.shared.playSound(type: .countDown)
-                    startedRedFlash = true
-                    startFlashing()
-                }
-            } else {
-                stopTimer()
-            }
-        }
-        RunLoop.current.add(timer!, forMode: .common)
-    }
-
-    private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
-        flashTimer?.invalidate()
-        flashTimer = nil
-        isRunning = false
-    }
-
-    private func startFlashing() {
-        flashTimer?.invalidate()
-        flashTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            DispatchQueue.main.async {
-                withAnimation(.spring) {
-                    flashRed.toggle()
-                }
-            }
-        }
-    }
-
-    private var formattedTime: String {
-        let minutes = Int(remainingTime) / 60
-        let seconds = Int(remainingTime) % 60
-        let centiseconds = Int((remainingTime - Double(Int(remainingTime))) * 100)
-        return String(format: "%02d.%02d.%02d", minutes, seconds, centiseconds)
     }
 }
 

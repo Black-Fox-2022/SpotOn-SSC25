@@ -17,7 +17,7 @@ struct TutorialSheet: View {
     var body: some View {
         VStack(alignment: .center, spacing: 10) {
 
-            Text("Mission II - Be a Dispatcher")
+            Text("Your Mission - Be a Dispatcher")
                 .font(.system(size: 24, weight: .bold, design: .monospaced))
                 .multilineTextAlignment(.center)
 
@@ -109,7 +109,7 @@ struct TutorialSheet: View {
                 .foregroundColor(.white)
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(orangeTint.opacity(finishingIsBlocked ? 0.6 : 1.0))
+                .background(finishingIsBlocked ? .secondary.opacity(0.4) : orangeTint)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .padding(.horizontal, 40)
             }
@@ -124,7 +124,7 @@ struct TimerCircleView: View {
     @Binding var isRunning: Bool
 
     @State private var remainingTime: CGFloat = 6.0
-    private let totalTime: CGFloat = 6.0
+    private let totalTime: CGFloat = 5.0
 
     private var progress: CGFloat {
         return remainingTime / totalTime

@@ -147,7 +147,9 @@ struct conversationView: View {
                                         lightFeedback()
                                         
                                         if option.text.contains("address") {
-                                            knowsLocation = true
+                                            withAnimation(.easeInOut) {
+                                                knowsLocation = true
+                                            }
                                         }
 
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
