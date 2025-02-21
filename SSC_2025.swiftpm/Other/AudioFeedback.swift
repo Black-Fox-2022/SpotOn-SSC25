@@ -52,9 +52,9 @@ class SoundManager {
 
                 switch type {
                 case .buttonPrimary:
-                    self.audioPlayer?.volume = 0.2
-                case .buttonSecondary:
                     self.audioPlayer?.volume = 0.3
+                case .buttonSecondary:
+                    self.audioPlayer?.volume = 0.4
                 case .buttonAlert:
                     self.audioPlayer?.volume = 0.1
                 case .countDown:

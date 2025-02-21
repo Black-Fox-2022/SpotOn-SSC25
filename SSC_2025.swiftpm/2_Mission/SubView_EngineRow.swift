@@ -114,7 +114,7 @@ struct EngineRow: View {
                     .foregroundStyle(.white)
                     .padding(.vertical, 4)
                     .padding(.horizontal, 6)
-                    .background(orangeTint)
+                    .background(redTint)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .padding(10)
             }

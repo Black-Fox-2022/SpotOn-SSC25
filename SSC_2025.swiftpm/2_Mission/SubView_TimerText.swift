@@ -54,7 +54,9 @@ struct TimerText: View {
         timer = nil
         flashTimer?.invalidate()
         flashTimer = nil
-        isRunning = false
+        withAnimation {
+            isRunning = false
+        }
     }
 
     private func startFlashing() {

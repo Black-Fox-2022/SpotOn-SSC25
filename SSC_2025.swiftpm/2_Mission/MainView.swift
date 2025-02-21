@@ -60,7 +60,7 @@ struct Mission_CallResponder: View {
 
                 HStack (spacing: 0) {
                     Text("Mission")
-                        .foregroundStyle(orangeTint)
+                        .foregroundStyle(redTint)
                     Text(" Dispatcher ")
                         .foregroundStyle(.primary.opacity(0.8))
 
@@ -85,7 +85,7 @@ struct Mission_CallResponder: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
                 })
-                .background(isRunning ? .secondary.opacity(0.4) : orangeTint)
+                .background(isRunning ? .secondary.opacity(0.4) : redTint)
                 .clipShape(.rect(cornerRadius: 8))
                 .disabled(isRunning)
                 .modifier(ShakeEffect(animatableData: shakeTrigger))
@@ -112,7 +112,7 @@ struct Mission_CallResponder: View {
                             if !isRunning && !tutorialSheet{
                                 VStack(alignment: .leading) {
                                     TypeWriterText(.constant(callerFeedbackTitle))
-                                        .foregroundStyle(orangeTint)
+                                        .foregroundStyle(redTint)
                                         .frame(width: 400, alignment: .leading)
                                     if feedback1Desc {
                                         TypeWriterText(.constant(callerFeedbackDescription))
@@ -156,7 +156,7 @@ struct Mission_CallResponder: View {
                             if !isRunning && feedback3 && !tutorialSheet{
                                 VStack (alignment: .leading){
                                     TypeWriterText(.constant(stationFeedbackTitle))
-                                        .foregroundStyle(orangeTint)
+                                        .foregroundStyle(redTint)
                                         .frame(width: 400, alignment: .leading)
                                     if feedback3Desc {
                                         TypeWriterText(.constant(stationFeedbackDescription))
@@ -184,7 +184,7 @@ struct Mission_CallResponder: View {
                                 if !isRunning && feedback2 && !tutorialSheet{
                                     VStack (alignment: .leading){
                                         TypeWriterText(.constant(unitFeedbackTitle))
-                                            .foregroundStyle(orangeTint)
+                                            .foregroundStyle(redTint)
                                             .frame(width: 400, alignment: .leading)
                                         if feedback2Desc {
                                             TypeWriterText(.constant(unitFeedbackDescription))

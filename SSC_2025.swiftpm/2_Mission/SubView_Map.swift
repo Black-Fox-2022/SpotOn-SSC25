@@ -166,7 +166,7 @@ struct mapView: View {
                                 HStack(spacing: 5) {
                                     Text("\(count)x")
                                         .contentTransition(.numericText())
-                                        .foregroundStyle(orangeTint)
+                                        .foregroundStyle(redTint)
                                         .fontWeight(.semibold)
                                     Text("\(unitName(for: unit, count: count))") // Handles pluralization
                                 }

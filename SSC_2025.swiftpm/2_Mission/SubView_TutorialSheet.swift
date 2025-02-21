@@ -31,7 +31,7 @@ struct TutorialSheet: View {
             VStack(alignment: .leading, spacing: 15) {
                 HStack {
                     Image(systemName: "person.wave.2")
-                        .foregroundColor(orangeTint)
+                        .foregroundColor(redTint)
                         .font(.system(size: 26))
                         .frame(width: 60)
                     VStack(alignment: .leading) {
@@ -46,7 +46,7 @@ struct TutorialSheet: View {
 
                 HStack {
                     Image(systemName: "dot.viewfinder")
-                        .foregroundColor(orangeTint)
+                        .foregroundColor(redTint)
                         .font(.system(size: 26))
                         .frame(width: 60)
                     VStack(alignment: .leading) {
@@ -61,7 +61,7 @@ struct TutorialSheet: View {
 
                 HStack {
                     Image(systemName: "light.beacon.max")
-                        .foregroundColor(orangeTint)
+                        .foregroundColor(redTint)
                         .font(.system(size: 26))
                         .frame(width: 60)
                     VStack(alignment: .leading) {
@@ -76,7 +76,7 @@ struct TutorialSheet: View {
 
                 HStack {
                     Image(systemName: "60.arrow.trianglehead.counterclockwise")
-                        .foregroundColor(orangeTint)
+                        .foregroundColor(redTint)
                         .font(.system(size: 25))
                         .frame(width: 60)
                     VStack(alignment: .leading) {
@@ -109,7 +109,7 @@ struct TutorialSheet: View {
                 .foregroundColor(.white)
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(finishingIsBlocked ? .secondary.opacity(0.4) : orangeTint)
+                .background(finishingIsBlocked ? .secondary.opacity(0.4) : redTint)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .padding(.horizontal, 40)
             }

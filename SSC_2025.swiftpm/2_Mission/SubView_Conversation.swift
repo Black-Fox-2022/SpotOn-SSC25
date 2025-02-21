@@ -147,9 +147,7 @@ struct conversationView: View {
                                         lightFeedback()
                                         
                                         if option.text.contains("address") {
-                                            withAnimation(.easeInOut) {
-                                                knowsLocation = true
-                                            }
+                                            knowsLocation = true
                                         }
 
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
@@ -213,7 +211,7 @@ struct answerOption: View {
                     .padding(.horizontal)
                     .frame(height: 60)
                     .frame(maxWidth: 180)
-                    .background(orangeTint)
+                    .background(redTint)
                     .clipShape(.rect(cornerRadius: 10))
     }
 }
@@ -236,10 +234,10 @@ struct textBubble: View {
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
-                    .foregroundStyle(isIncoming ? colorScheme == .light ? .black : .white : orangeTint)
+                    .foregroundStyle(isIncoming ? colorScheme == .light ? .black : .white : redTint)
             }
             .padding()
-            .background(isIncoming ? colorScheme == .light ? .black.opacity(0.1) : .white.opacity(0.1) : orangeTint.opacity(0.25))
+            .background(isIncoming ? colorScheme == .light ? .black.opacity(0.1) : .white.opacity(0.1) : redTint.opacity(0.25))
             .clipShape(.rect(cornerRadius: 10))
 
             if isIncoming {

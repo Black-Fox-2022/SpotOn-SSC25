@@ -84,10 +84,10 @@ struct station_firecentral: View {
                 Spacer()
                 Text("\(respEngineCount)/4 Responding")
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .foregroundStyle(orangeTint)
+                    .foregroundStyle(redTint)
                     .padding(.vertical, 4)
                     .padding(.horizontal, 6)
-                    .background(orangeTint.opacity(0.25))
+                    .background(redTint.opacity(0.25))
                     .clipShape(.rect(cornerRadius: 8))
             }
 
@@ -165,10 +165,10 @@ struct station_firesouth: View {
                 Spacer()
                 Text("\(respEngineCount)/3 Responding")
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .foregroundStyle(orangeTint)
+                    .foregroundStyle(redTint)
                     .padding(.vertical, 4)
                     .padding(.horizontal, 6)
-                    .background(orangeTint.opacity(0.25))
+                    .background(redTint.opacity(0.25))
                     .clipShape(.rect(cornerRadius: 8))
             }
 
@@ -235,10 +235,10 @@ struct station_EMS_central: View {
                 Spacer()
                 Text("\(respEngineCount)/3 Responding")
                     .font(.system(size: 16, weight: .medium, design: .monospaced))
-                    .foregroundStyle(orangeTint)
+                    .foregroundStyle(redTint)
                     .padding(.vertical, 4)
                     .padding(.horizontal, 6)
-                    .background(orangeTint.opacity(0.25))
+                    .background(redTint.opacity(0.25))
                     .clipShape(.rect(cornerRadius: 8))
             }
 

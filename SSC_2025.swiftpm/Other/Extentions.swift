@@ -19,4 +19,4 @@ extension Color {
     }
 }
 
-let orangeTint: Color = Color(.red) //Color(hex: 0xf96407)
+let redTint: Color = Color(.red) //Color(hex: 0xf96407)

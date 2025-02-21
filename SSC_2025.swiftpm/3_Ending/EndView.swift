@@ -37,7 +37,7 @@ struct EndView: View {
                         VStack (alignment: .leading, spacing: 4){
                             TypeWriterText(.constant("Always remember!"))
                                 .font(.system(size: 100, weight: .bold, design: .monospaced))
-                                .foregroundStyle(orangeTint)
+                                .foregroundStyle(redTint)
                             VStack (alignment: .leading, spacing: 0){
                                 if showLine2 {
                                     endViewLineTexts(question: "Where", fullQuestion: "is the emergency location?")
@@ -194,7 +194,7 @@ struct FirefighterLinkCard: View {
             VStack(alignment: .leading) {
                 Text(link.title)
                     .font(.system(size: 18, weight: .semibold, design: .monospaced))
-                    .foregroundColor(orangeTint)
+                    .foregroundColor(redTint)
 
                 Text(link.subtitle)
                     .font(.system(size: 16, weight: .medium, design: .monospaced))

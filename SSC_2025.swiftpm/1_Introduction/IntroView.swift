@@ -171,7 +171,7 @@ struct IntroView: View {
                 zoomedIn = true
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    withAnimation(.spring) {
+                    withAnimation {
                         currentMode = .level
                     }
                 }
