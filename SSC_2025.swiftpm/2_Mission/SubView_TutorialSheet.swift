@@ -13,6 +13,7 @@ struct TutorialSheet: View {
     @Binding var tutorialSheet: Bool
 
     @State var finishingIsBlocked: Bool = true
+    @State private var shakeTrigger: CGFloat = 0
 
     var body: some View {
         VStack(alignment: .center, spacing: 10) {
@@ -93,27 +94,44 @@ struct TutorialSheet: View {
 
             Spacer()
 
-            Button(action: {
-                mediumFeedback()
-                SoundManager.shared.playSound(type: .buttonPrimary)
-                tutorialSheet = false
-                isRunning = true
-            }) {
-                HStack (spacing: 20){
-                    if finishingIsBlocked {
-                        TimerCircleView(isRunning: $finishingIsBlocked)
+            VStack (spacing: 10){
+                Button(action: {
+                    mediumFeedback()
+                    SoundManager.shared.playSound(type: .buttonPrimary)
+                    tutorialSheet = false
+                    isRunning = true
+                }) {
+                    HStack (spacing: 20){
+                        if finishingIsBlocked {
+                            TimerCircleView(isRunning: $finishingIsBlocked)
+                        }
+                        Text("Start Mission")
                     }
-                    Text("Start Mission")
+                    .font(.system(size: 18, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(finishingIsBlocked ? .secondary.opacity(0.4) : redTint)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal, 40)
                 }
-                .font(.system(size: 18, weight: .semibold, design: .monospaced))
-                .foregroundColor(.white)
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(finishingIsBlocked ? .secondary.opacity(0.4) : redTint)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal, 40)
+                .disabled(finishingIsBlocked)
+                .modifier(ShakeEffect(animatableData: shakeTrigger))
+                .onTapGesture {
+                    if finishingIsBlocked {
+                        withAnimation(.bouncy(duration: 0.75)) {
+                            shakeTrigger += 1
+                        }
+                    }
+                }
+                
+                HStack {
+                    Text("Tip: Activate Sound")
+                    Image(systemName: "speaker.wave.2")
+                }
+                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.tertiary)
             }
-            .disabled(finishingIsBlocked)
         }
         .padding(30)
         .interactiveDismissDisabled()

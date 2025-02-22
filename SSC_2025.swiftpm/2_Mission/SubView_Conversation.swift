@@ -12,6 +12,7 @@ struct conversationView: View {
 
     @Binding var knowsLocation: Bool
     @Binding var delayedLocationRequest: Bool
+    @Binding var askedForPastaType: Bool
 
     let conversation: Conversation = Conversation(
         initialMessage: "Hello! Please, I need help fast.",
@@ -155,6 +156,10 @@ struct conversationView: View {
                                                 messages.append(Message(text: option.callerReply, isIncoming: true))
                                                 currentStep += 1
                                                 preventAction = false
+
+                                                if currentStep == 3 && option.text.contains("Which pasta"){
+                                                    askedForPastaType = true
+                                                }
 
                                                 if currentStep >= 4 && !knowsLocation {
                                                     delayedLocationRequest = true

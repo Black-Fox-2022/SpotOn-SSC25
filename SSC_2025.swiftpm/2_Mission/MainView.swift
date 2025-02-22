@@ -9,17 +9,6 @@ import SwiftUI
 import MapKit
 import AVFoundation
 
-struct ShakeEffect: GeometryEffect {
-    var travelDistance: CGFloat = 4
-    var shakesPerUnit: CGFloat = 3
-    var animatableData: CGFloat
-
-    func effectValue(size: CGSize) -> ProjectionTransform {
-        let translation = travelDistance * sin(animatableData * .pi * shakesPerUnit)
-        return ProjectionTransform(CGAffineTransform(translationX: translation, y: 0))
-    }
-}
-
 struct Mission_CallResponder: View {
     @Environment(\.colorScheme) var colorScheme
 
@@ -29,6 +18,7 @@ struct Mission_CallResponder: View {
     @State var countRespondingUnits: [engineType] = []
 
     @State private var isRunning: Bool = false
+    @State private var remainingTime: TimeInterval = 60.00
     @State private var shakeTrigger: CGFloat = 0
     @State private var knowsLocation: Bool = false
 
@@ -41,6 +31,7 @@ struct Mission_CallResponder: View {
     @State private var stationOffset: CGFloat = 0
 
     @State var delayedLocationRequest: Bool = false
+    @State var askedForPastaType: Bool = false
     @State var respondingFromCentral: Bool = false
 
     @State private var feedback1Desc = false
@@ -51,17 +42,21 @@ struct Mission_CallResponder: View {
     @State private var feedback3 = false
     @State private var feedback3Desc = false
 
+    var allowEarlyMissionEnding: Bool {
+        return countRespondingUnits.count >= 4 && isRunning && remainingTime <= 30.0
+    }
+
     var body: some View {
         VStack (spacing: 12){
             HStack {
-                TimerText(isRunning: $isRunning)
+                TimerText(isRunning: $isRunning, timeLeft: $remainingTime)
 
                 Spacer()
 
                 HStack (spacing: 0) {
                     Text("Mission")
                         .foregroundStyle(redTint)
-                    Text(" Dispatcher ")
+                    Text(" Dispatcher")
                         .foregroundStyle(.primary.opacity(0.8))
 
                 }
@@ -70,24 +65,39 @@ struct Mission_CallResponder: View {
                 Spacer()
 
                 Button(action: {
-                    successFeedback()
-                    SoundManager.shared.playSound(type: .buttonPrimary)
-                    withAnimation(.spring) {
-                        isRunning = false
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                        exitAnimation()
+                    if isRunning {
+                        SoundManager.shared.playSound(type: .buttonPrimary)
+                        withAnimation(.spring) {
+                            isRunning = false
+                        }
+                    }else {
+                        successFeedback()
+                        SoundManager.shared.playSound(type: .buttonPrimary)
+                        withAnimation(.spring) {
+                            isRunning = false
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                            exitAnimation()
+                        }
                     }
                 }, label: {
-                    Text("Finish Mission")
+                    HStack {
+                        Text(isRunning ? "End Call" : "Finish Mission")
+
+                        if allowEarlyMissionEnding {
+                            Image(systemName: "phone.down.fill")
+                        }else if !isRunning {
+                            Image(systemName: "arrow.right.to.line")
+                        }
+                    }
                         .font(.system(size: 16, weight: .semibold, design: .monospaced))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
                 })
-                .background(isRunning ? .secondary.opacity(0.4) : redTint)
+                .background(isRunning && !allowEarlyMissionEnding ? .secondary.opacity(0.4) : redTint)
                 .clipShape(.rect(cornerRadius: 8))
-                .disabled(isRunning)
+                .disabled(isRunning && !allowEarlyMissionEnding)
                 .modifier(ShakeEffect(animatableData: shakeTrigger))
                 .onTapGesture {
                     if isRunning {
@@ -105,7 +115,7 @@ struct Mission_CallResponder: View {
 
             HStack (spacing: 12){
 
-                conversationView(knowsLocation: $knowsLocation, delayedLocationRequest: $delayedLocationRequest)
+                conversationView(knowsLocation: $knowsLocation, delayedLocationRequest: $delayedLocationRequest, askedForPastaType: $askedForPastaType)
                     .opacity(!isRunning ? 0.25 : 1.0)
                     .overlay(
                         VStack {
@@ -233,8 +243,8 @@ struct Mission_CallResponder: View {
 
     private var callerFeedbackDescription: String {
         return delayedLocationRequest
-            ? "You responded well, but you should have asked for the location earlier!"
-            : "You asked all the right questions and handled the call perfectly!"
+        ? (askedForPastaType ? "You responded ok, but you should have asked for the location earlier and maybe the pasta type wasn't that important!" : "You responded well, but you should have asked for the location earlier!")
+        : (askedForPastaType ? "Very good, but maybe asking for the pasta type isn't that important." : "You asked all the right questions and handled the call perfectly!")
     }
 
     private var stationFeedbackTitle: String {
@@ -244,7 +254,7 @@ struct Mission_CallResponder: View {
     private var stationFeedbackDescription: String {
         return respondingFromCentral
             ? "You dispatched units from the central fire station, ensuring a fast response!"
-            : "You selected units from a distant fire station. A closer one would have been faster."
+            : "You mainly selected units from the fire station further away, the other one would've been faster!"
     }
 
     private var unitFeedbackTitle: String {
@@ -278,7 +288,7 @@ struct Mission_CallResponder: View {
         if commandTrucks == 1 {
             messages.append("And a command truck is very useful for coordination — good job!")
         } else {
-            messages.append(" Though a command truck would have helped coordinate efforts better.")
+            messages.append("And a command vehicle would have helped with coordination.")
 
         }
 

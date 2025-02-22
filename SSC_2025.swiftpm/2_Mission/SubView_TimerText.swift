@@ -9,7 +9,9 @@ import SwiftUI
 
 struct TimerText: View {
     @Binding var isRunning: Bool
-    @State private var remainingTime: TimeInterval = 60.00
+    @Binding var timeLeft: TimeInterval
+
+    @State private var remainingTime: TimeInterval = 60.0
     @State private var timer: Timer? = nil
     @State private var flashTimer: Timer? = nil
 
@@ -42,6 +44,7 @@ struct TimerText: View {
                     startedRedFlash = true
                     startFlashing()
                 }
+                timeLeft = remainingTime
             } else {
                 stopTimer()
             }

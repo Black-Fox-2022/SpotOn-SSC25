@@ -110,6 +110,7 @@ struct IntroView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             lightFeedback()
+            SoundManager.shared.playSound(type: .buttonSecondary)
             showHint = false
             withAnimation(.easeInOut(duration: 1.0)) {
                 currentIndex += 1

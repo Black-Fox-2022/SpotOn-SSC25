@@ -87,6 +87,7 @@ struct EndView: View {
             }
 
             Button(action: {
+                SoundManager.shared.playSound(type: .buttonSecondary)
                 withAnimation(.smooth) {
                     currentMode = .intro
                 }
@@ -209,6 +210,7 @@ struct FirefighterLinkCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .onTapGesture {
             mediumFeedback()
+            SoundManager.shared.playSound(type: .buttonPrimary)
             if let url = URL(string: link.url) {
                 UIApplication.shared.open(url)
             }
