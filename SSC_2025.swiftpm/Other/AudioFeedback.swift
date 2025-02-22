@@ -54,7 +54,7 @@ class SoundManager {
                 case .buttonPrimary:
                     self.audioPlayer?.volume = 0.3
                 case .buttonSecondary:
-                    self.audioPlayer?.volume = 0.75
+                    self.audioPlayer?.volume = 0.8
                 case .buttonAlert:
                     self.audioPlayer?.volume = 0.1
                 case .countDown:

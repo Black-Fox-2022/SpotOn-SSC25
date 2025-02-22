@@ -94,6 +94,7 @@ struct Mission_CallResponder: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
+                        .animation(.spring, value: allowEarlyMissionEnding)
                 })
                 .background(isRunning && !allowEarlyMissionEnding ? .secondary.opacity(0.4) : redTint)
                 .clipShape(.rect(cornerRadius: 8))
