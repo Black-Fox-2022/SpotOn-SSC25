@@ -23,6 +23,7 @@ struct Mission_CallResponder: View {
     @State private var knowsLocation: Bool = false
 
     @State private var tutorialSheet: Bool = true
+    @State private var infoSheet: Bool = false
     @State private var isExiting = false
 
     @State private var topBarOffset: CGFloat = 0
@@ -43,7 +44,7 @@ struct Mission_CallResponder: View {
     @State private var feedback3Desc = false
 
     var allowEarlyMissionEnding: Bool {
-        return countRespondingUnits.count >= 4 && isRunning && remainingTime <= 30.0
+        return countRespondingUnits.count >= 4 && isRunning && remainingTime <= 30.0 && knowsLocation
     }
 
     var body: some View {
@@ -58,6 +59,14 @@ struct Mission_CallResponder: View {
                         .foregroundStyle(redTint)
                     Text(" Dispatcher")
                         .foregroundStyle(.primary.opacity(0.8))
+                    Button(action: {
+                        infoSheet.toggle()
+                    }, label: {
+                        Image(systemName: "info.circle")
+                            .fontWeight(.regular)
+                    })
+                    .padding(.leading, 6)
+                    .foregroundStyle(.secondary)
 
                 }
                 .font(.system(size: 18, weight: .bold, design: .monospaced))
@@ -123,11 +132,11 @@ struct Mission_CallResponder: View {
                         VStack {
                             if !isRunning && !tutorialSheet{
                                 VStack(alignment: .leading) {
-                                    TypeWriterText(.constant(callerFeedbackTitle))
+                                    TypeWriterText(.constant(callerFeedbackTitle), delay: 0.75)
                                         .foregroundStyle(redTint)
                                         .frame(width: 400, alignment: .leading)
                                     if feedback1Desc {
-                                        TypeWriterText(.constant(callerFeedbackDescription))
+                                        TypeWriterText(.constant(callerFeedbackDescription), delay: 0.5)
                                             .multilineTextAlignment(.leading)
                                     }
                                 }
@@ -167,11 +176,11 @@ struct Mission_CallResponder: View {
                         VStack {
                             if !isRunning && feedback3 && !tutorialSheet{
                                 VStack (alignment: .leading){
-                                    TypeWriterText(.constant(stationFeedbackTitle))
+                                    TypeWriterText(.constant(stationFeedbackTitle), delay: 0.75)
                                         .foregroundStyle(redTint)
                                         .frame(width: 400, alignment: .leading)
                                     if feedback3Desc {
-                                        TypeWriterText(.constant(stationFeedbackDescription))
+                                        TypeWriterText(.constant(stationFeedbackDescription), delay: 0.5)
                                             .multilineTextAlignment(.leading)
                                     }
                                 }
@@ -195,11 +204,11 @@ struct Mission_CallResponder: View {
                             VStack {
                                 if !isRunning && feedback2 && !tutorialSheet{
                                     VStack (alignment: .leading){
-                                        TypeWriterText(.constant(unitFeedbackTitle))
+                                        TypeWriterText(.constant(unitFeedbackTitle), delay: 0.75)
                                             .foregroundStyle(redTint)
                                             .frame(width: 400, alignment: .leading)
                                         if feedback2Desc {
-                                            TypeWriterText(.constant(unitFeedbackDescription))
+                                            TypeWriterText(.constant(unitFeedbackDescription), delay: 0.5)
                                                 .multilineTextAlignment(.leading)
                                         }
                                     }
@@ -235,6 +244,9 @@ struct Mission_CallResponder: View {
         }
         .sheet(isPresented: $tutorialSheet, content: {
             TutorialSheet(isRunning: $isRunning, tutorialSheet: $tutorialSheet)
+        })
+        .sheet(isPresented: $infoSheet, content: {
+            TutorialSheet(isRunning: $isRunning, tutorialSheet: $infoSheet, isReshown: true)
         })
         //.redacted(reason: .placeholder)
     }
@@ -288,9 +300,9 @@ struct Mission_CallResponder: View {
         }
 
         if commandTrucks == 1 {
-            messages.append("And a command truck is very useful for coordination — good job!")
+            messages.append("A command truck is very useful for coordination — good job!")
         } else {
-            messages.append("And a command vehicle would have helped with coordination.")
+            messages.append("A command vehicle would have helped with coordination.")
 
         }
 

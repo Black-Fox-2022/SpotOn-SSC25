@@ -107,27 +107,27 @@ struct EndView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear{
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: {
-                    SoundManager.shared.playSound(type: .typingONE)
+                    SoundManager.shared.playSound(type: .typingTWO)
                     withAnimation(.spring) {
                         showLine2 = true
                     } completion: {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.75 , execute: {
-                            SoundManager.shared.playSound(type: .typingONE)
+                            SoundManager.shared.playSound(type: .typingTHREE)
                             withAnimation(.bouncy) {
                                 showLine3 = true
                             } completion: {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.75 , execute: {
-                                    SoundManager.shared.playSound(type: .typingONE)
+                                    SoundManager.shared.playSound(type: .typingFOUR)
                                     withAnimation(.bouncy) {
                                         showLine4 = true
                                     } completion: {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 , execute: {
-                                            SoundManager.shared.playSound(type: .typingONE)
+                                            SoundManager.shared.playSound(type: .typingFIVE)
                                             withAnimation(.bouncy) {
                                                 showLine5 = true
                                             } completion: {
                                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.75 , execute: {
-                                                    SoundManager.shared.playSound(type: .typingONE)
+                                                    SoundManager.shared.playSound(type: .typingSIX)
                                                     withAnimation(.bouncy) {
                                                         showLine6 = true
                                                     } completion: {

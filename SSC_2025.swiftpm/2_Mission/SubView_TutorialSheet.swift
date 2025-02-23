@@ -12,6 +12,8 @@ struct TutorialSheet: View {
     @Binding var isRunning: Bool
     @Binding var tutorialSheet: Bool
 
+    var isReshown: Bool = false
+
     @State var finishingIsBlocked: Bool = true
     @State private var shakeTrigger: CGFloat = 0
 
@@ -37,6 +39,7 @@ struct TutorialSheet: View {
             VStack(alignment: .leading, spacing: 15) {
                 HStack {
                     Image(systemName: "person.wave.2")
+                        .symbolEffect(.bounce, value: showBox1)
                         .foregroundColor(redTint)
                         .font(.system(size: 26))
                         .frame(width: 60)
@@ -53,6 +56,7 @@ struct TutorialSheet: View {
 
                 HStack {
                     Image(systemName: "dot.viewfinder")
+                        .symbolEffect(.bounce, value: showBox2)
                         .foregroundColor(redTint)
                         .font(.system(size: 26))
                         .frame(width: 60)
@@ -69,6 +73,7 @@ struct TutorialSheet: View {
 
                 HStack {
                     Image(systemName: "light.beacon.max")
+                        .symbolEffect(.bounce, value: showBox3)
                         .foregroundColor(redTint)
                         .font(.system(size: 26))
                         .frame(width: 60)
@@ -85,6 +90,7 @@ struct TutorialSheet: View {
 
                 HStack {
                     Image(systemName: "60.arrow.trianglehead.counterclockwise")
+                        .symbolEffect(.bounce, value: showBox4)
                         .foregroundColor(redTint)
                         .font(.system(size: 25))
                         .frame(width: 60)
@@ -107,24 +113,26 @@ struct TutorialSheet: View {
                 Button(action: {
                     mediumFeedback()
                     SoundManager.shared.playSound(type: .buttonPrimary)
-                    tutorialSheet = false
-                    isRunning = true
+                    withAnimation {
+                        tutorialSheet = false
+                        isRunning = true
+                    }
                 }) {
                     HStack (spacing: 20){
-                        if finishingIsBlocked {
+                        if finishingIsBlocked && !isReshown{
                             TimerCircleView(isRunning: $finishingIsBlocked)
                         }
-                        Text("Start Mission")
+                        Text(isReshown ? "Continue Mission" : "Start Mission")
                     }
                     .font(.system(size: 18, weight: .semibold, design: .monospaced))
                     .foregroundColor(.white)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(finishingIsBlocked ? .secondary.opacity(0.4) : redTint)
+                    .background(finishingIsBlocked && !isReshown ? .secondary.opacity(0.4) : redTint)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .padding(.horizontal, 40)
                 }
-                .disabled(finishingIsBlocked)
+                .disabled(finishingIsBlocked && !isReshown)
                 .modifier(ShakeEffect(animatableData: shakeTrigger))
                 .onTapGesture {
                     if finishingIsBlocked {
@@ -144,28 +152,40 @@ struct TutorialSheet: View {
         }
         .padding(30)
         .interactiveDismissDisabled()
+        .onChange(of: isReshown) {
+            finishingIsBlocked = isReshown ? false : true
+        }
         .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                withAnimation(.easeInOut) {
-                    showBox1 = true
-                } completion: {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        withAnimation(.easeInOut) {
-                            showBox2 = true
-                        } completion: {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                withAnimation(.easeInOut) {
-                                    showBox3 = true
-                                } completion: {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                        withAnimation(.easeInOut) {
-                                            showBox4 = true
+            if !isReshown {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    withAnimation(.easeInOut) {
+                        showBox1 = true
+                    } completion: {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+                            withAnimation(.easeInOut) {
+                                showBox2 = true
+                            } completion: {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+                                    withAnimation(.easeInOut) {
+                                        showBox3 = true
+                                    } completion: {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+                                            withAnimation(.easeInOut) {
+                                                showBox4 = true
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                }
+            }else {
+                withAnimation(.easeInOut) {
+                    showBox1 = true
+                    showBox2 = true
+                    showBox3 = true
+                    showBox4 = true
                 }
             }
         }

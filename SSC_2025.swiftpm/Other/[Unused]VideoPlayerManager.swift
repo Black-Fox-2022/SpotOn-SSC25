@@ -12,7 +12,7 @@ class VideoPlayerManager: ObservableObject {
     let player: AVPlayer
 
     init() {
-        if let videoPath = Bundle.main.path(forResource: "VideoClip1", ofType: "MOV") {
+        if let videoPath = Bundle.main.path(forResource: "-", ofType: "MOV") {
             let videoURL = URL(fileURLWithPath: videoPath)
             self.player = AVPlayer(url: videoURL)
 

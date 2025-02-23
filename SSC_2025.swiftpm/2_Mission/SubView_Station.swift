@@ -21,18 +21,17 @@ struct stationView: View {
     @State var testAnimation = false
 
     var body: some View {
-        VStack {
-            if let selectedPoint = selectedPoint {
+        ZStack {
                 ZStack {
                     station_firecentral(countRespondingUnits: $countRespondingUnits, respondingFromCentral: $respondingFromCentral)
-                        .opacity(selectedPoint.row == 4 && selectedPoint.col == 17 ? 1.0 : 0.0)
+                        .opacity(selectedPoint?.row == 4 && selectedPoint?.col == 17 ? 1.0 : 0.0)
                     station_firesouth(countRespondingUnits: $countRespondingUnits)
-                        .opacity(selectedPoint.row == 17 && selectedPoint.col == 22 ? 1.0 : 0.0)
+                        .opacity(selectedPoint?.row == 17 && selectedPoint?.col == 22 ? 1.0 : 0.0)
                     station_EMS_central(countRespondingUnits: $countRespondingUnits)
-                        .opacity(selectedPoint.row == 16 && selectedPoint.col == 6 ? 1.0 : 0.0)
+                        .opacity(selectedPoint?.row == 16 && selectedPoint?.col == 6 ? 1.0 : 0.0)
                 }
 
-            }else {
+            if selectedPoint == nil {
                 VStack {
                     HStack (spacing: 4){
                         Text("Select a station")

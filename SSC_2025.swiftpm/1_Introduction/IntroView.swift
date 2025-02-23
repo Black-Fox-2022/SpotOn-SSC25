@@ -97,11 +97,14 @@ struct IntroView: View {
                     .animation(.easeInOut(duration: 1.0), value: zoomedIn)
             }
             Spacer()
-            if currentIndex == 0 {
+            if currentIndex <= 3 {
                 Text("Tap anywhere to continue")
                     .font(.system(size: 20, weight: .semibold, design: .monospaced))
                     .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
                     .padding(.bottom, 25)
+                    .background(.primary.opacity(0.1))
+                    .background(.background)
                     .opacity(showHint ? 1.0 : 0.0)
                     .animation(.easeInOut(duration: 0.1), value: showHint)
             }
@@ -111,11 +114,11 @@ struct IntroView: View {
         .onTapGesture {
             lightFeedback()
             SoundManager.shared.playSound(type: .buttonSecondary)
-            showHint = false
             withAnimation(.easeInOut(duration: 1.0)) {
                 currentIndex += 1
             }
             if currentIndex >= 3 {
+                showHint = false
                 stopFlashingMode()
                 startLevelMode()
             }
@@ -172,9 +175,7 @@ struct IntroView: View {
                 zoomedIn = true
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    withAnimation (.smooth){
-                        currentMode = .level
-                    }
+                    currentMode = .level
                 }
             }
         }
