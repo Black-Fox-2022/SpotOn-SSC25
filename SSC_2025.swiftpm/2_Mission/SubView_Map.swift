@@ -14,6 +14,10 @@ struct mapView: View {
     @Binding var countRespondingUnits: [engineType]
     @Binding var isRunning: Bool
 
+    @Binding var centralStationActive: Bool
+    @Binding var southStationActive: Bool
+    @Binding var emsStationActive: Bool
+
     // Fire Central     : 4,17
     // Fire Secondary   : 17,24
     // EMS              : 16,6
@@ -24,23 +28,23 @@ struct mapView: View {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
-        [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,0,0,0,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,3,3,3,3,2,1,1,1,1,1,1,1,0,0,0,0,0],
         // 5
-        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
-        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
-        [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0],
-        [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,0],
-        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,0,1,1,1,1,1,1,1,1,3,3,3,3,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+        [0,0,1,1,1,1,1,1,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+        [0,0,0,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0],
+        [0,0,0,1,1,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,0],
+        [0,0,1,1,1,1,1,1,5,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
         // 10
-        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
-        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
-        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,1,1,1,1,1,1,4,1,5,5,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,1,1,1,1,1,1,4,1,1,1,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,1,1,1,1,1,1,4,1,1,1,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,1,1,1,1,1,4,1,1,1,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,1,1,1,1,1,4,1,1,1,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
         // 15
-        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
-        [1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,0,0,0,0,0,0],
+        [0,1,1,1,1,1,1,4,1,1,1,5,5,5,5,5,5,5,1,1,1,1,1,1,1,1,1,0,0,0],
+        [1,1,1,1,1,1,2,4,1,1,1,1,1,1,1,1,1,5,5,1,1,1,1,1,1,1,1,1,0,0],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,5,5,5,2,1,0,0,0,0,0,0],
         [0,0,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0],
         [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,0,0,0],
         // 20
@@ -64,13 +68,19 @@ struct mapView: View {
                     ForEach(0..<localMatrix.count, id: \.self) { row in
                         HStack(spacing: spacing) {
                             ForEach(0..<localMatrix[row].count, id: \.self) { col in
-                                if localMatrix[row][col] == 1 {
+                                if localMatrix[row][col] == 1 || localMatrix[row][col] == 3 || localMatrix[row][col] == 4 || localMatrix[row][col] == 5{
                                     if knowsLocation {
                                         ZStack {
                                             RoundedRectangle(cornerRadius: 10)
                                                 .foregroundColor(
+                                                    localMatrix[row][col] == 1 ?
                                                     (activePoint?.row == row && activePoint?.col == col) ? Color.red :
                                                         (fadingPoint?.row == row && fadingPoint?.col == col) ? Color.red.opacity(0.6) :
+                                                        Color.primary.opacity(0.5)
+                                                    :
+                                                        localMatrix[row][col] == 3 && centralStationActive ? Color.blue.opacity(0.25) :
+                                                        localMatrix[row][col] == 4 && emsStationActive ? Color.blue.opacity(0.25) :
+                                                        localMatrix[row][col] == 5 && southStationActive ? Color.blue.opacity(0.25) :
                                                         Color.primary.opacity(0.5)
                                                 )
                                                 .frame(width: dotSize, height: dotSize)
@@ -251,5 +261,5 @@ struct mapView: View {
 }
 
 #Preview {
-    mapView(selectedPoint: .constant(nil), knowsLocation: .constant(true), countRespondingUnits: .constant([]), isRunning: .constant(false))
+    mapView(selectedPoint: .constant(nil), knowsLocation: .constant(true), countRespondingUnits: .constant([]), isRunning: .constant(false), centralStationActive: .constant(true), southStationActive: .constant(true), emsStationActive: .constant(true))
 }

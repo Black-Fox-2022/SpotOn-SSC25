@@ -35,13 +35,17 @@ struct Mission_CallResponder: View {
     @State var askedForPastaType: Bool = false
     @State var respondingFromCentral: Bool = false
 
-    @State private var feedback1Desc = false
+    @State var centralStationActive: Bool = false
+    @State var southStationActive: Bool = false
+    @State var emsStationActive: Bool = false
 
+
+    @State private var feedback1Desc = false
     @State private var feedback2 = false
     @State private var feedback2Desc = false
-
     @State private var feedback3 = false
     @State private var feedback3Desc = false
+
 
     var allowEarlyMissionEnding: Bool {
         return countRespondingUnits.count >= 4 && isRunning && remainingTime <= 30.0 && knowsLocation
@@ -164,7 +168,7 @@ struct Mission_CallResponder: View {
 
                     VStack {
                         HStack {
-                            mapView(selectedPoint: $selectedPoint, knowsLocation: $knowsLocation, countRespondingUnits: $countRespondingUnits, isRunning: $isRunning)
+                            mapView(selectedPoint: $selectedPoint, knowsLocation: $knowsLocation, countRespondingUnits: $countRespondingUnits, isRunning: $isRunning, centralStationActive: $centralStationActive, southStationActive: $southStationActive, emsStationActive: $emsStationActive)
                         }
                     }
                     .padding()
@@ -198,7 +202,7 @@ struct Mission_CallResponder: View {
                     )
                     .offset(x: mapOffset)
 
-                    stationView(selectedPoint: $selectedPoint, countRespondingUnits: $countRespondingUnits, respondingFromCentral: $respondingFromCentral)
+                    stationView(selectedPoint: $selectedPoint, countRespondingUnits: $countRespondingUnits, respondingFromCentral: $respondingFromCentral, centralStationActive: $centralStationActive, southStationActive: $southStationActive, emsStationActive: $emsStationActive)
                         .opacity(!isRunning ? 0.25 : 1.0)
                         .overlay(
                             VStack {

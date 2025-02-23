@@ -35,17 +35,17 @@ struct EngineRow: View {
     private var image: String {
         switch type {
         case .fireEngine:
-            return "Starnberg_HLF20"
+            return "LF20-CC-Pixabay"
         case .secondfireEngine:
-            return "Starnberg_HLF20"
+            return "LF20-CC-Pixabay"
         case .ladderTruck:
-            return "Starnberg_DLK"
+            return "DLK-CC-Pixabay"
         case .commandTruck:
-            return "Starnberg_ELW"
+            return "ELW-CC-Pixabay"
         case .ambulance:
-            return "Sons_RTW"
+            return "RTW-CC-Pixabay"
         case .bigambulance:
-            return "Sons_S-RTW"
+            return "Int_RTW-CC"
         }
     }
 

@@ -142,6 +142,7 @@ struct conversationView: View {
                             HStack {
                                 ForEach(conversation.steps[currentStep].options) { option in
                                     Button(action: {
+                                        print("tapped on answer option")
                                         messages.append(Message(text: option.text, isIncoming: false))
                                         preventAction = true
                                         SoundManager.shared.playSound(type: .buttonSecondary)

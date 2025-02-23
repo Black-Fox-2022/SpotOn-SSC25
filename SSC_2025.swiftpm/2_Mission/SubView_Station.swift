@@ -18,16 +18,20 @@ struct stationView: View {
     @Binding var countRespondingUnits: [engineType]
     @Binding var respondingFromCentral: Bool
 
+    @Binding var centralStationActive: Bool
+    @Binding var southStationActive: Bool
+    @Binding var emsStationActive: Bool
+
     @State var testAnimation = false
 
     var body: some View {
         ZStack {
                 ZStack {
-                    station_firecentral(countRespondingUnits: $countRespondingUnits, respondingFromCentral: $respondingFromCentral)
+                    station_firecentral(countRespondingUnits: $countRespondingUnits, respondingFromCentral: $respondingFromCentral, centralStationActive: $centralStationActive)
                         .opacity(selectedPoint?.row == 4 && selectedPoint?.col == 17 ? 1.0 : 0.0)
-                    station_firesouth(countRespondingUnits: $countRespondingUnits)
+                    station_firesouth(countRespondingUnits: $countRespondingUnits, southStationActive: $southStationActive)
                         .opacity(selectedPoint?.row == 17 && selectedPoint?.col == 22 ? 1.0 : 0.0)
-                    station_EMS_central(countRespondingUnits: $countRespondingUnits)
+                    station_EMS_central(countRespondingUnits: $countRespondingUnits, emsStationActive: $emsStationActive)
                         .opacity(selectedPoint?.row == 16 && selectedPoint?.col == 6 ? 1.0 : 0.0)
                 }
 
@@ -60,6 +64,7 @@ struct stationView: View {
 struct station_firecentral: View {
     @Binding var countRespondingUnits: [engineType]
     @Binding var respondingFromCentral: Bool
+    @Binding var centralStationActive: Bool
 
     @State var FS_Main_FE_I_Status: engineStatus = .inStation
     @State var FS_Main_FE_II_Status: engineStatus = .inStation
@@ -97,6 +102,9 @@ struct station_firecentral: View {
                         type: .fireEngine,
                         status: FS_Main_FE_I_Status,
                         action: {
+                            withAnimation(.spring) {
+                                centralStationActive = true
+                            }
                             FS_Main_FE_I_Status = .responding
                             countRespondingUnits.append(.fireEngine)
                         }
@@ -107,6 +115,9 @@ struct station_firecentral: View {
                         type: .secondfireEngine,
                         status: FS_Main_FE_II_Status,
                         action: {
+                            withAnimation(.spring) {
+                                centralStationActive = true
+                            }
                             FS_Main_FE_II_Status = .responding
                             countRespondingUnits.append(.fireEngine)
                         }
@@ -116,6 +127,9 @@ struct station_firecentral: View {
                         type: .commandTruck,
                         status: FS_Main_RE_I_Status,
                         action: {
+                            withAnimation(.spring) {
+                                centralStationActive = true
+                            }
                             FS_Main_RE_I_Status = .responding
                             countRespondingUnits.append(.commandTruck)
                         }
@@ -126,6 +140,9 @@ struct station_firecentral: View {
                         type: .ladderTruck,
                         status: FS_Main_LE_I_Status,
                         action: {
+                            withAnimation(.spring) {
+                                centralStationActive = true
+                            }
                             FS_Main_LE_I_Status = .responding
                             countRespondingUnits.append(.ladderTruck)
                         }
@@ -143,6 +160,7 @@ struct station_firecentral: View {
 
 struct station_firesouth: View {
     @Binding var countRespondingUnits: [engineType]
+    @Binding var southStationActive: Bool
 
     @State var FS_South_FE_I_Status: engineStatus = .inStation
     @State var FS_South_FE_II_Status: engineStatus = .inStation
@@ -178,6 +196,7 @@ struct station_firesouth: View {
                         type: .fireEngine,
                         status: FS_South_FE_I_Status,
                         action: {
+                            southStationActive = true
                             FS_South_FE_I_Status = .responding
                             countRespondingUnits.append(.fireEngine)
                         }
@@ -188,6 +207,7 @@ struct station_firesouth: View {
                         type: .secondfireEngine,
                         status: FS_South_FE_II_Status,
                         action: {
+                            southStationActive = true
                             FS_South_FE_II_Status = .responding
                             countRespondingUnits.append(.fireEngine)
                         }
@@ -198,6 +218,7 @@ struct station_firesouth: View {
                         type: .ladderTruck,
                         status: FS_South_LE_I_Status,
                         action: {
+                            southStationActive = true
                             FS_South_LE_I_Status = .responding
                             countRespondingUnits.append(.ladderTruck)
                         }
@@ -213,6 +234,7 @@ struct station_firesouth: View {
 
 struct station_EMS_central: View {
     @Binding var countRespondingUnits: [engineType]
+    @Binding var emsStationActive: Bool
 
     @State var FS_Main_AB_I_Status: engineStatus = .inStation
     @State var FS_Main_AB_II_Status: engineStatus = .inStation
@@ -248,6 +270,7 @@ struct station_EMS_central: View {
                         type: .ambulance,
                         status: FS_Main_AB_I_Status,
                         action: {
+                            emsStationActive = true
                             FS_Main_AB_I_Status = .responding
                             countRespondingUnits.append(.ambulance)
                         }
@@ -258,6 +281,7 @@ struct station_EMS_central: View {
                         type: .ambulance,
                         status: FS_Main_AB_II_Status,
                         action: {
+                            emsStationActive = true
                             FS_Main_AB_II_Status = .responding
                             countRespondingUnits.append(.ambulance)
                         }
@@ -268,6 +292,7 @@ struct station_EMS_central: View {
                         type: .bigambulance,
                         status: FS_Main_XXLAB_I_Status,
                         action: {
+                            emsStationActive = true
                             FS_Main_XXLAB_I_Status = .responding
                             countRespondingUnits.append(.bigambulance)
                         }
