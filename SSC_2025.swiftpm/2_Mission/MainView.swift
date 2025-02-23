@@ -18,7 +18,8 @@ struct Mission_CallResponder: View {
     @State var countRespondingUnits: [engineType] = []
 
     @State private var isRunning: Bool = false
-    @State private var remainingTime: TimeInterval = 60.00
+    @State private var remainingTime: Float = 60.00
+    @State private var under30Seconds: Bool = false
     @State private var shakeTrigger: CGFloat = 0
     @State private var knowsLocation: Bool = false
 
@@ -33,6 +34,7 @@ struct Mission_CallResponder: View {
 
     @State var delayedLocationRequest: Bool = false
     @State var askedForPastaType: Bool = false
+    @State var askedIfGoInside: Bool = false
     @State var respondingFromCentral: Bool = false
 
     @State var centralStationActive: Bool = false
@@ -47,14 +49,15 @@ struct Mission_CallResponder: View {
     @State private var feedback3Desc = false
 
 
+    //@State var allowEarlyMissionEnding: Bool = false
     var allowEarlyMissionEnding: Bool {
-        return countRespondingUnits.count >= 4 && isRunning && remainingTime <= 30.0 && knowsLocation
+        return countRespondingUnits.count >= 4 && isRunning && under30Seconds && knowsLocation
     }
 
     var body: some View {
         VStack (spacing: 12){
             HStack {
-                TimerText(isRunning: $isRunning, timeLeft: $remainingTime)
+                TimerText(isRunning: $isRunning, under30Seconds: $under30Seconds)
 
                 Spacer()
 
@@ -103,11 +106,11 @@ struct Mission_CallResponder: View {
                             Image(systemName: "arrow.right.to.line")
                         }
                     }
-                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .animation(.spring, value: allowEarlyMissionEnding)
+                    .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .animation(.spring, value: allowEarlyMissionEnding == true)
                 })
                 .background(isRunning && !allowEarlyMissionEnding ? .secondary.opacity(0.4) : redTint)
                 .clipShape(.rect(cornerRadius: 8))
@@ -130,7 +133,7 @@ struct Mission_CallResponder: View {
 
             HStack (spacing: 12){
 
-                conversationView(knowsLocation: $knowsLocation, delayedLocationRequest: $delayedLocationRequest, askedForPastaType: $askedForPastaType)
+                conversationView(knowsLocation: $knowsLocation, delayedLocationRequest: $delayedLocationRequest, askedForPastaType: $askedForPastaType, askedIfGoInside: $askedIfGoInside)
                     .opacity(!isRunning ? 0.25 : 1.0)
                     .overlay(
                         VStack {
@@ -165,7 +168,6 @@ struct Mission_CallResponder: View {
                     .offset(x: conversationOffset)
 
                 VStack (spacing: 12){
-
                     VStack {
                         HStack {
                             mapView(selectedPoint: $selectedPoint, knowsLocation: $knowsLocation, countRespondingUnits: $countRespondingUnits, isRunning: $isRunning, centralStationActive: $centralStationActive, southStationActive: $southStationActive, emsStationActive: $emsStationActive)
@@ -256,13 +258,19 @@ struct Mission_CallResponder: View {
     }
 
     private var callerFeedbackTitle: String {
-        return delayedLocationRequest ? "You could have been faster!" : "Amazing!"
+        return askedIfGoInside ? "Not the smartest decisions": delayedLocationRequest ? "You could have been faster!" : "Amazing!"
     }
 
     private var callerFeedbackDescription: String {
-        return delayedLocationRequest
+        var messages: [String] = []
+
+        messages.append(delayedLocationRequest
         ? (askedForPastaType ? "You responded ok, but you should have asked for the location earlier and maybe the pasta type wasn't that important!" : "You responded well, but you should have asked for the location earlier!")
-        : (askedForPastaType ? "Very good, but maybe asking for the pasta type isn't that important." : "You asked all the right questions and handled the call perfectly!")
+        : (askedForPastaType ? "Very good, but maybe asking for the pasta type isn't that important." : "You asked all the right questions and handled the call perfectly!"))
+
+        messages.append(askedIfGoInside ? "Though you should have never asked if the caller can check inside!" : "")
+
+        return messages.joined(separator: " \n")
     }
 
     private var stationFeedbackTitle: String {

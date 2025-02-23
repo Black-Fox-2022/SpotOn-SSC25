@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TimerText: View {
     @Binding var isRunning: Bool
-    @Binding var timeLeft: TimeInterval
+    @Binding var under30Seconds: Bool
 
     @State private var remainingTime: TimeInterval = 60.0
     @State private var timer: Timer? = nil
@@ -44,7 +44,11 @@ struct TimerText: View {
                     startedRedFlash = true
                     startFlashing()
                 }
-                timeLeft = remainingTime
+                if remainingTime < 30 {
+                    withAnimation(.spring) {
+                        under30Seconds = true
+                    }
+                }
             } else {
                 stopTimer()
             }
