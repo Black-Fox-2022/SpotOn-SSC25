@@ -15,6 +15,11 @@ struct TutorialSheet: View {
     @State var finishingIsBlocked: Bool = true
     @State private var shakeTrigger: CGFloat = 0
 
+    @State private var showBox1: Bool = false
+    @State private var showBox2: Bool = false
+    @State private var showBox3: Bool = false
+    @State private var showBox4: Bool = false
+
     var body: some View {
         VStack(alignment: .center, spacing: 10) {
 
@@ -44,6 +49,7 @@ struct TutorialSheet: View {
                             .lineLimit(2, reservesSpace: true)
                     }
                 }
+                .opacity(showBox1 ? 1 : 0)
 
                 HStack {
                     Image(systemName: "dot.viewfinder")
@@ -59,6 +65,7 @@ struct TutorialSheet: View {
                             .lineLimit(2, reservesSpace: true)
                     }
                 }
+                .opacity(showBox2 ? 1 : 0)
 
                 HStack {
                     Image(systemName: "light.beacon.max")
@@ -74,6 +81,7 @@ struct TutorialSheet: View {
                             .lineLimit(2, reservesSpace: true)
                     }
                 }
+                .opacity(showBox3 ? 1 : 0)
 
                 HStack {
                     Image(systemName: "60.arrow.trianglehead.counterclockwise")
@@ -89,6 +97,7 @@ struct TutorialSheet: View {
                             .lineLimit(1, reservesSpace: true)
                     }
                 }
+                .opacity(showBox4 ? 1 : 0)
             }
             .padding(.horizontal)
 
@@ -135,6 +144,31 @@ struct TutorialSheet: View {
         }
         .padding(30)
         .interactiveDismissDisabled()
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                withAnimation(.easeInOut) {
+                    showBox1 = true
+                } completion: {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        withAnimation(.easeInOut) {
+                            showBox2 = true
+                        } completion: {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                withAnimation(.easeInOut) {
+                                    showBox3 = true
+                                } completion: {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                        withAnimation(.easeInOut) {
+                                            showBox4 = true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

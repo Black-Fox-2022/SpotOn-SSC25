@@ -12,6 +12,7 @@ enum SoundType {
     case buttonSecondary
     case buttonAlert
     case countDown
+    case typingONE
 }
 
 class SoundManager {
@@ -21,6 +22,14 @@ class SoundManager {
     private var countdownPlayer: AVAudioPlayer?
 
     private init() {}
+
+    func stopAnySound() {
+        self.audioPlayer?.stop()
+        self.countdownPlayer?.stop()
+
+        self.audioPlayer = nil
+        self.countdownPlayer = nil
+    }
 
     func playSound(type: SoundType) {
         var fileName: String?
@@ -34,6 +43,8 @@ class SoundManager {
             fileName = "Alert1-Sound"
         case .countDown:
             fileName = "Countdown10Sec"
+        case .typingONE:
+            fileName = "TypingSound-1"
         }
 
         guard let fileName = fileName, let url = Bundle.main.url(forResource: fileName, withExtension: type == .countDown ? "mp3" : "m4a") else {
@@ -52,13 +63,16 @@ class SoundManager {
 
                 switch type {
                 case .buttonPrimary:
-                    self.audioPlayer?.volume = 0.3
+                    self.audioPlayer?.volume = 0.5
                 case .buttonSecondary:
-                    self.audioPlayer?.volume = 0.8
+                    self.audioPlayer?.volume = 0.9
                 case .buttonAlert:
                     self.audioPlayer?.volume = 0.1
                 case .countDown:
                     self.countdownPlayer?.volume = 0.05
+                case .typingONE:
+                    self.audioPlayer?.volume = 0.05
+                    self.audioPlayer?.rate = 1.0
                 }
 
                 print("Playing sound: \(fileName)")

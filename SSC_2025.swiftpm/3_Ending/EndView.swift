@@ -38,6 +38,9 @@ struct EndView: View {
                             TypeWriterText(.constant("Always remember!"))
                                 .font(.system(size: 100, weight: .bold, design: .monospaced))
                                 .foregroundStyle(redTint)
+                                .onAppear{
+                                    SoundManager.shared.playSound(type: .typingONE)
+                                }
                             VStack (alignment: .leading, spacing: 0){
                                 if showLine2 {
                                     endViewLineTexts(question: "Where", fullQuestion: "is the emergency location?")
@@ -55,6 +58,7 @@ struct EndView: View {
                                     endViewLineTexts(question: "Wait", fullQuestion: "for further questions")
                                 }
                             }
+                            .padding(10)
                             Spacer()
                         }
                         .multilineTextAlignment(.leading)
@@ -103,22 +107,27 @@ struct EndView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear{
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: {
+                    SoundManager.shared.playSound(type: .typingONE)
                     withAnimation(.spring) {
                         showLine2 = true
                     } completion: {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.75 , execute: {
+                            SoundManager.shared.playSound(type: .typingONE)
                             withAnimation(.bouncy) {
                                 showLine3 = true
                             } completion: {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.75 , execute: {
+                                    SoundManager.shared.playSound(type: .typingONE)
                                     withAnimation(.bouncy) {
                                         showLine4 = true
                                     } completion: {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 , execute: {
+                                            SoundManager.shared.playSound(type: .typingONE)
                                             withAnimation(.bouncy) {
                                                 showLine5 = true
                                             } completion: {
                                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.75 , execute: {
+                                                    SoundManager.shared.playSound(type: .typingONE)
                                                     withAnimation(.bouncy) {
                                                         showLine6 = true
                                                     } completion: {

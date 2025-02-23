@@ -8,13 +8,13 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "FireKIt",
+    name: "OnPoint",
     platforms: [
         .iOS("18.0")
     ],
     products: [
         .iOSApplication(
-            name: "FireKIt",
+            name: "OnPoint",
             targets: ["AppModule"],
             bundleIdentifier: "com.lukas.ssc2025",
             teamIdentifier: "C6M6L6KSM9",

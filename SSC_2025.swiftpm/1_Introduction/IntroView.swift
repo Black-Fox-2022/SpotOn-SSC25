@@ -172,7 +172,7 @@ struct IntroView: View {
                 zoomedIn = true
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    withAnimation {
+                    withAnimation (.smooth){
                         currentMode = .level
                     }
                 }

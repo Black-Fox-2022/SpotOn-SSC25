@@ -12,6 +12,7 @@ struct mapView: View {
     @Binding var selectedPoint: (row: Int, col: Int)?
     @Binding var knowsLocation: Bool
     @Binding var countRespondingUnits: [engineType]
+    @Binding var isRunning: Bool
 
     // Fire Central     : 4,17
     // Fire Secondary   : 17,24
@@ -195,8 +196,12 @@ struct mapView: View {
                 }
             }
         )
-        .onAppear{
-            startFlashingMode()
+        .onChange(of: isRunning) {
+            if !isRunning {
+                stopFlashingMode()
+            } else {
+                startFlashingMode()
+            }
         }
     }
 
@@ -246,5 +251,5 @@ struct mapView: View {
 }
 
 #Preview {
-    mapView(selectedPoint: .constant(nil), knowsLocation: .constant(true), countRespondingUnits: .constant([]))
+    mapView(selectedPoint: .constant(nil), knowsLocation: .constant(true), countRespondingUnits: .constant([]), isRunning: .constant(false))
 }

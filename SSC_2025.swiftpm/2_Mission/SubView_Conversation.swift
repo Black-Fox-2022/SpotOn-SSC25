@@ -188,6 +188,7 @@ struct conversationView: View {
                         .padding(.horizontal, 1)
                         .scrollIndicators(.hidden)
                         .background(.primary.opacity(0.1))
+                        .background(.primary.opacity(0.1))
                         .background(colorScheme == .light ? .white : .black)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                     }

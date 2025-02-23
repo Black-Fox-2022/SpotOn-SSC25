@@ -111,6 +111,7 @@ struct Mission_CallResponder: View {
             .padding(10)
             .background(.primary.opacity(0.05))
             .clipShape(.rect(cornerRadius: 15))
+            .padding(.top, 10)
             .padding(.horizontal, 35)
             .offset(y: topBarOffset)
 
@@ -154,7 +155,7 @@ struct Mission_CallResponder: View {
 
                     VStack {
                         HStack {
-                            mapView(selectedPoint: $selectedPoint, knowsLocation: $knowsLocation, countRespondingUnits: $countRespondingUnits)
+                            mapView(selectedPoint: $selectedPoint, knowsLocation: $knowsLocation, countRespondingUnits: $countRespondingUnits, isRunning: $isRunning)
                         }
                     }
                     .padding()

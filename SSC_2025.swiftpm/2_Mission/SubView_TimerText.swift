@@ -53,6 +53,7 @@ struct TimerText: View {
     }
 
     private func stopTimer() {
+        SoundManager.shared.stopAnySound()
         timer?.invalidate()
         timer = nil
         flashTimer?.invalidate()

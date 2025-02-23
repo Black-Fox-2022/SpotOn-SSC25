@@ -9,7 +9,7 @@ enum Mode {
 
 struct ContentView: View {
 
-    @State var currentMode: Mode = .intro
+    @State var currentMode: Mode = .end
 
     var body: some View {
         ZStack {
