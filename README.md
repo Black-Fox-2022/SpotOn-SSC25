@@ -1,5 +1,6 @@
 # Swift Student Challenge 2025 - Submission
-Welcome to my entry for the Swift Student Challenge 2025! After my last two submissions, I've decided to focus on a specific problem this time instead of creating a fully functional app (see GoalKit & MemoKit).
+Welcome to my entry for the Swift Student Challenge 2025! After my last two submissions, I've decided to focus on a specific problem this time instead of creating a fully functional app (see GoalKit & MemoKit).  
+If you want to learn more about SpotOn or my other projects follow me on Twitter/X @custusfox
 
 ## SpotOn in ONE sentence
 Most people are not sure how to be most effective when calling emergency services, SpotOn tries to remind them of the basics by giving them the opportunity to experience the other side. 
