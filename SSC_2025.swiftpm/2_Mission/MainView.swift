@@ -266,7 +266,7 @@ struct Mission_CallResponder: View {
 
         messages.append(delayedLocationRequest
         ? (askedForPastaType ? "You responded ok, but you should have asked for the location earlier and maybe the pasta type wasn't that important!" : "You responded well, but you should have asked for the location earlier!")
-        : (askedForPastaType ? "Very good, but maybe asking for the pasta type isn't that important." : "You asked all the right questions and handled the call perfectly!"))
+        : (askedForPastaType ? "Very good, but maybe asking for the pasta type isn't that important." : "You asked all the right questions and handled the call very well!"))
 
         messages.append(askedIfGoInside ? "Though you should have never asked if the caller can check inside!" : "")
 

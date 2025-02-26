@@ -198,7 +198,6 @@ struct IntroView: View {
     }
 
     func runDot() {
-        print("start New Flash")
         DispatchQueue.main.async {
             var possiblePoints: [(Int, Int)] = []
             for row in 0..<germanyMatrix.count {
@@ -211,16 +210,13 @@ struct IntroView: View {
 
             if let newPoint = possiblePoints.randomElement() {
                 activePoint = newPoint
-                print("new Point")
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    print("switching to Fading Point")
                     fadingPoint = newPoint
                     activePoint = nil
 
                     let fadeDuration = Double.random(in: 15.0...20.0)
                     DispatchQueue.main.asyncAfter(deadline: .now() + fadeDuration) {
-                        print("done")
                         fadingPoint = nil
                     }
                 }

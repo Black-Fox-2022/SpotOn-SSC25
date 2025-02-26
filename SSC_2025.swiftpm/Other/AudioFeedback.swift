@@ -63,7 +63,7 @@ class SoundManager {
         }
 
         guard let fileName = fileName, let url = Bundle.main.url(forResource: fileName, withExtension: type == .countDown ? "mp3" : "m4a") else {
-            print("🚨 Audio file not found")
+            print("Audio file not found")
             return
         }
 
@@ -80,7 +80,7 @@ class SoundManager {
                 case .buttonPrimary:
                     self.audioPlayer?.volume = 0.5
                 case .buttonSecondary:
-                    self.audioPlayer?.volume = 1.0
+                    self.audioPlayer?.volume = 1.2
                 case .buttonAlert:
                     self.audioPlayer?.volume = 0.1
                 case .countDown:
