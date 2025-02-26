@@ -17,7 +17,6 @@ let package = Package(
             name: "OnPoint",
             targets: ["AppModule"],
             bundleIdentifier: "com.lukas.ssc2025",
-            teamIdentifier: "C6M6L6KSM9",
             displayVersion: "1.0",
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
